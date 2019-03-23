@@ -8,7 +8,7 @@
   <meta name="description" content>
   <meta name="author" content="Dixon Xu">
   <!-- Open Graph Data -->
-  <meta property="og:title" content="代理模式和装饰器模式">
+  <meta property="og:title" content="代理模式和装饰器模式实例区分">
   <meta property="og:description" content>
   <meta property="og:site_name" content="Dixon&#39;s blog">
   <meta property="og:type" content="article">
@@ -43,7 +43,7 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-title with-background-image">
-          <p class="title">代理模式和装饰器模式</p>
+          <p class="title">代理模式和装饰器模式实例区分</p>
           <p class="subtitle"></p>
         </div>
         <div class="site-menu with-background-image">
@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-03-23</span>
-            <span class="time">16:19:17</span>
+            <span class="time">16:36:11</span>
           </span>
           
           <!--  Categories  -->
@@ -122,7 +122,8 @@
         
         <!-- Post Main Content -->
         <div class="post-content">
-          <p>代理模式和装饰器模式非常相近，本文通过举例，针对俩者的区别进行探讨。<br><a id="more"></a><br>示例：孩子会吃饭</p>
+          <p>代理模式和装饰器模式非常相近，本文通过举例，针对俩者的区别进行探讨。<br><a id="more"></a></p>
+<h2 id="示例分析"><a href="#示例分析" class="headerlink" title="示例分析"></a>示例分析</h2><p>示例：孩子会吃饭</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IChild</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>创建孩子类，实现吃饭接口：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">implements</span> <span class="title">IChild</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Log.e(<span class="string">"TAG"</span>,<span class="string">"孩子吃饭"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -147,11 +148,12 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Child child = <span class="keyword">new</span> Child();</span><br><span class="line">ChildWrapper wrapper = <span class="keyword">new</span> ChildWrapper(child);</span><br><span class="line">Parent parent = <span class="keyword">new</span> Parent(child);</span><br><span class="line"></span><br><span class="line">School school = <span class="keyword">new</span> School();</span><br><span class="line">school.addStudent(wrapper);</span><br></pre></td></tr></table></figure>
 <p>通过上述例子，相信可以直观的看出：</p>
 <p>孩子有吃饭和学习俩件任务，父母作为代理类之一，只能指导吃饭；学校作为代理类之一，只能指导学习。<br>对于某些独立自主的孩子（装饰类），它可能学习更加主动，吃完饭会主动收拾碗筷，但这些本来就是它原有功能的加强，它的本质仍然是孩子，依然可以享受父母、学校的代理帮助。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>代理模式，注重对对象某一功能的流程把控和辅助。它可以控制对象做某些事，<strong>重心是为了借用对象的功能完成某一流程，而非对象功能如何。</strong><br>装饰模式，注重对对象功能的扩展，<strong>它不关心外界如何调用，只注重对对象功能的加强，装饰后还是对象本身。</strong><br>所以：<br><strong>对于代理类，如何调用对象的某一功能是思考重点，而不需要兼顾对象的所有功能；<br>对于装饰类，如何扩展对象的某一功能是思考重点，同时也需要兼顾对象的其它功能，因为再怎么装饰，本质也是对象本身，要担负起对象应有的职责。</strong></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>代理模式，注重对对象某一功能的流程把控和辅助。它可以控制对象做某些事，<strong>重心是为了借用对象的功能完成某一流程，而非对象功能如何。</strong><br>装饰模式，注重对对象功能的扩展，<strong>它不关心外界如何调用，只注重对对象功能的加强，装饰后还是对象本身。</strong></p>
+<p><strong>对于代理类，如何调用对象的某一功能是思考重点，而不需要兼顾对象的所有功能；<br>对于装饰类，如何扩展对象的某一功能是思考重点，同时也需要兼顾对象的其它功能，因为再怎么装饰，本质也是对象本身，要担负起对象应有的职责。</strong></p>
 <blockquote>
 <p>从上述例子也可以看出：<br>被装饰者一旦身份增加，作为装饰类，也需要相应的扩展，这必然造成编码的负担。</p>
 </blockquote>
-<p>设计模式本身是为了提升代码的可扩展性，灵活运用即可，不必生搬硬套，非要分出个所以然来，装饰器模式和代理模式的区别即是如此。</p>
+<p>设计模式本身是为了提升代码的可扩展性，灵活运用即可，不必生搬硬套，非要分出个所以然来，装饰器模式和代理模式的区别就是这样。</p>
 
         </div>
       </div>
