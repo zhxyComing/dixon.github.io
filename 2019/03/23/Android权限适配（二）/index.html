@@ -8,7 +8,7 @@
   <meta name="description" content>
   <meta name="author" content="Dixon Xu">
   <!-- Open Graph Data -->
-  <meta property="og:title" content="Android权限适配（一）">
+  <meta property="og:title" content="Android权限适配（二）">
   <meta property="og:description" content>
   <meta property="og:site_name" content="Dixon&#39;s blog">
   <meta property="og:type" content="article">
@@ -38,12 +38,12 @@
     <!-- Page Header -->
 
 
-<header class="site-header header-background" style="background-image: url(/images/cover2.jpg)">
+<header class="site-header header-background" style="background-image: url(/images/cover3.jpg)">
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-title with-background-image">
-          <p class="title">Android权限适配（一）</p>
+          <p class="title">Android权限适配（二）</p>
           <p class="subtitle"></p>
         </div>
         <div class="site-menu with-background-image">
@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-03-23</span>
-            <span class="time">18:17:24</span>
+            <span class="time">18:25:27</span>
           </span>
           
           <!--  Categories  -->
@@ -148,7 +148,7 @@
 <p>考虑到现今4.x、5.x手机占比不高且只会越来越少，这里只提供前往app设置页面的代码。如果各位有需要可以根据手机rom自行适配。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.KITKAT &amp;&amp; Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.M) &#123;</span><br><span class="line">    Intent intent = <span class="keyword">new</span> Intent();</span><br><span class="line">    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);</span><br><span class="line">    intent.setData(Uri.fromParts(<span class="string">"package"</span>, context.getPackageName(), <span class="keyword">null</span>));</span><br><span class="line">    context.startActivity(intent);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>4.4以下版本建议忽略。</p>
-<h3 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h3><p>Google起初对悬浮窗抱有很好的愿景。</p>
+<h3 id="我有话说"><a href="#我有话说" class="headerlink" title="我有话说"></a>我有话说</h3><p>Google起初对悬浮窗抱有很好的愿景。</p>
 <p>2.x时期，Google并没有把悬浮窗作为一个权限，它以为大家都会按需使用悬浮窗功能，自觉维护Android环境。然而没料想到开发者们把悬浮窗用开了花，毕竟谁的App都想时刻占据用户流量。这次，开发者坑了爹。</p>
 <p>4.x、5.x时期，手机厂商们急于解决这种问题，将悬浮窗默认关停，只留下一个鬼都找不到的悬浮窗权限开启页面。在没有Google参与的情况下，根本没有Android API可以判断、开启悬浮窗权限。那些本不需要悬浮窗权限的App毫无影响，依赖悬浮窗生存的App则懵了逼，只能不停的兼容、兼容。这次，手机厂商坑了爹。</p>
 <p>6.x之后，Google爸爸终于解决了这个问题：他将悬浮窗”纳入权限”，然后提供官方的api供判断是否有悬浮窗权限，最后提供官方的页面供开启悬浮窗权限。</p>
@@ -158,7 +158,7 @@
 <h3 id="判断是否有无障碍辅助权限"><a href="#判断是否有无障碍辅助权限" class="headerlink" title="判断是否有无障碍辅助权限"></a>判断是否有无障碍辅助权限</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isSettingsOn</span><span class="params">(Context mContext, Class serviceClass)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> accessibilityEnabled = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">final</span> String service = mContext.getPackageName() + <span class="string">"/"</span> + serviceClass.getCanonicalName();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        accessibilityEnabled = Settings.Secure.getInt(mContext.getApplicationContext().getContentResolver(),</span><br><span class="line">                android.provider.Settings.Secure.ACCESSIBILITY_ENABLED);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Settings.SettingNotFoundException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    TextUtils.SimpleStringSplitter mStringColonSplitter = <span class="keyword">new</span> TextUtils.SimpleStringSplitter(<span class="string">':'</span>);</span><br><span class="line">    <span class="keyword">if</span> (accessibilityEnabled == <span class="number">1</span>) &#123;</span><br><span class="line">        String settingValue = Settings.Secure.getString(mContext.getApplicationContext().getContentResolver(),</span><br><span class="line">                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);</span><br><span class="line">        <span class="keyword">if</span> (settingValue != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mStringColonSplitter.setString(settingValue);</span><br><span class="line">            <span class="keyword">while</span> (mStringColonSplitter.hasNext()) &#123;</span><br><span class="line">                String accessibilityService = mStringColonSplitter.next();</span><br><span class="line">                <span class="keyword">if</span> (accessibilityService.equalsIgnoreCase(service)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>其中class为继承自<code>AccessibilityService</code>的无障碍功能类。<br>上述代码兼容至Android最新版本（9.x）。</p>
 <h3 id="跳转至无障碍辅助页面"><a href="#跳转至无障碍辅助页面" class="headerlink" title="跳转至无障碍辅助页面"></a>跳转至无障碍辅助页面</h3><p>通常情况下下面代码会跳转至需要无障碍辅助的应用列表页，但是不排除个别rom修改了无障碍辅助的页面层级关系，这种情况如有需要应单独针对rom做适配。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">jumpToSetting</span><span class="params">(<span class="keyword">final</span> Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Intent intent = <span class="keyword">new</span> Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);</span><br><span class="line">        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);</span><br><span class="line">        context.startActivity(intent);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;<span class="comment">//出现异常 可能和rom删除了该页面有关</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;程适配，详见Android权限适配（二）。</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">jumpToSetting</span><span class="params">(<span class="keyword">final</span> Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Intent intent = <span class="keyword">new</span> Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);</span><br><span class="line">        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);</span><br><span class="line">        context.startActivity(intent);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;<span class="comment">//出现异常 可能和rom删除了该页面有关</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
         </div>
       </div>
     </div>
