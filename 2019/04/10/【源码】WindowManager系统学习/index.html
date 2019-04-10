@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content>
+  <meta name="author" content="Dixon Xu">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="【源码】WindowManager系统学习">
+  <meta property="og:description" content>
+  <meta property="og:site_name" content="Dixon&#39;s blog">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="http://yoursite.com">
+  
+    <link rel="alternate" href="/atom.xml" title="Dixon&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>Dixon's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/images/cover6.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">【源码】WindowManager系统学习</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/zhxyComing">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1198097193@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By Dixon Xu</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2019-04-10</span>
+            <span class="time">21:32:10</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/Android/">Android</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/Android源码/">#Android源码</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>WindowManager及其相关类的源码探究。<br><a id="more"></a></p>
+<h1 id="WindowManager"><a href="#WindowManager" class="headerlink" title="WindowManager"></a>WindowManager</h1><table>
+<thead>
+<tr>
+<th>名词</th>
+<th>作用</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Window</td>
+<td>抽象类，用于管理 View。</td>
+<td>PhoneWindow</td>
+</tr>
+<tr>
+<td>WindowManager</td>
+<td>接口类，继承自 ViewManager，管理 Window。</td>
+<td>WindowManagerImpl</td>
+</tr>
+<tr>
+<td>WMS</td>
+<td>运行在 SystemServer 进程的 Service，与 WM 跨进程通信，用于处理 WM 的具体工作。</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<h2 id="PhoneWindow-的创建"><a href="#PhoneWindow-的创建" class="headerlink" title="PhoneWindow 的创建"></a>PhoneWindow 的创建</h2><p>Activity 启动过程中调用 ActivityThread.performLaunchActivity，之后在 Activity.attach 中被创建。</p>
+<p>*以下均基于8.0源码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mWindow = <span class="keyword">new</span> PhoneWindow(<span class="keyword">this</span>, window, activityConfigCallback);</span><br><span class="line">...</span><br><span class="line">mWindow.setWindowManager(</span><br><span class="line">        (WindowManager)context.getSystemService(Context.WINDOW_SERVICE),</span><br><span class="line">        mToken, mComponent.flattenToString(),</span><br><span class="line">        (info.flags &amp; ActivityInfo.FLAG_HARDWARE_ACCELERATED) != <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>接下来调用setWindowManager给 <strong>Window 的成员变量 mWindowManager</strong> 赋值，源码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setWindowManager</span><span class="params">(WindowManager wm, IBinder appToken, String appName,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> hardwareAccelerated)</span> </span>&#123;</span><br><span class="line">    mAppToken = appToken;</span><br><span class="line">    mAppName = appName;</span><br><span class="line">    mHardwareAccelerated = hardwareAccelerated</span><br><span class="line">            || SystemProperties.getBoolean(PROPERTY_HARDWARE_UI, <span class="keyword">false</span>);</span><br><span class="line">    <span class="keyword">if</span> (wm == <span class="keyword">null</span>) &#123;</span><br><span class="line">        wm = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">    &#125;</span><br><span class="line">    mWindowManager = ((WindowManagerImpl)wm).createLocalWindowManager(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当wm为null，返回 mContext.getSystemService(Context.WINDOW_SERVICE)。</p>
+<p>mContext的实现是ContextImpl：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getSystemService</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> SystemServiceRegistry.getSystemService(<span class="keyword">this</span>, name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SystemServiceRegistry 是一个HashMap类型的数据集，它会在静态代码块初始化多个变量，如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    registerService(Context.ACCESSIBILITY_SERVICE, AccessibilityManager.class,</span><br><span class="line">            <span class="keyword">new</span> CachedServiceFetcher&lt;AccessibilityManager&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> AccessibilityManager <span class="title">createService</span><span class="params">(ContextImpl ctx)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> AccessibilityManager.getInstance(ctx);</span><br><span class="line">        &#125;&#125;);</span><br><span class="line">        </span><br><span class="line">    ...</span><br><span class="line">    registerService(Context.WINDOW_SERVICE, WindowManager.class,</span><br><span class="line">            <span class="keyword">new</span> CachedServiceFetcher&lt;WindowManager&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> WindowManager <span class="title">createService</span><span class="params">(ContextImpl ctx)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> WindowManagerImpl(ctx);</span><br><span class="line">        &#125;&#125;);</span><br></pre></td></tr></table></figure>
+<p>上述 SystemServiceRegistry.getSystemService(this, name) 返回的就是 registerService 的最后一个参数 ServiceFetcher。</p>
+<p>回到 phoneWindow.setWindowManager( ) ，mWindowManager 紧接着调用了 wm.createLocalWindowManager ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> WindowManagerImpl <span class="title">createLocalWindowManager</span><span class="params">(Window parentWindow)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> WindowManagerImpl(mContext, parentWindow);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建了新的 WindowManagerImpl 实例，并将 PhoneWindow 本身传了进去，这样就可以通过调用 WM 而对 Window 执行操作。</p>
+<p>WindowManagerImpl 操作View，如 addView，最终调用的是 WindowManagerGlobal，它是个单例，WM.addView 最终会交给它去处理。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>一个 Activity 对应至少一个 Window（PhoneWindow） ，至少一个 WindowManager （WindowManagerImpl）。</p>
+<p>一个进程对应多个 Window（phoneWindow），多个 WindowManager（WindowManagerImpl），一个 WindowManagerGlobal。</p>
+<h4 id="关系图"><a href="#关系图" class="headerlink" title="关系图"></a>关系图</h4><p><img src="/2019/04/10/【源码】WindowManager系统学习/WindowManager关系图.png" alt="img"></p>
+<h2 id="持续完善中…"><a href="#持续完善中…" class="headerlink" title="持续完善中…"></a>持续完善中…</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        </p><p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+
