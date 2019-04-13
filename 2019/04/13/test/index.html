@@ -99,8 +99,8 @@
           
           <!-- Date -->
           <span class="date-time info">On
-            <span class="date">2019-04-10</span>
-            <span class="time">11:22:37</span>
+            <span class="date">2019-04-13</span>
+            <span class="time">11:22:36</span>
           </span>
           
           <!--  Categories  -->
@@ -139,12 +139,12 @@
 <p>项目中如下依赖：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation <span class="string">'com.xxx.push:core:1.0.0'</span></span><br><span class="line">implementation <span class="string">'com.mcxiaoke.volley:library:1.0.18'</span></span><br></pre></td></tr></table></figure>
 <p>其中 ‘com.xxx.push:core:1.0.0’ 又依赖了 ‘com.mcxiaoke.volley:library:1.0.19’，通过 Gradle View 查看真实依赖：</p>
-<p><img src="/2019/04/10/依赖树及简单应用/依赖树1.png" alt="img"></p>
+<p><img src="/2019/04/13/test/依赖树1.png" alt="img"></p>
 <p>说明默认使用较新版本。</p>
 <p>通常情况下会有警告，推荐我们使用同一版本，否则会有Crash风险。如果我们想强制项目使用同一指定版本，如使用’com.mcxiaoke.volley:library:1.0.18’ ，可以如下在build.gradle中配置：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">configurations.all &#123;</span><br><span class="line">    resolutionStrategy.eachDependency &#123; DependencyResolveDetails details -&gt;</span><br><span class="line">        def requested = details.requested</span><br><span class="line">        <span class="comment">//统一版本号</span></span><br><span class="line">        <span class="keyword">if</span> (requested.group == <span class="string">'com.mcxiaoke.volley'</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (requested.name.startsWith(<span class="string">"library"</span>)) &#123;</span><br><span class="line">                details.useVersion <span class="string">'1.0.18'</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>通过命令行查看依赖树：</p>
-<p><img src="/2019/04/10/依赖树及简单应用/依赖树2.png" alt="img"></p>
+<p><img src="/2019/04/13/test/依赖树2.png" alt="img"></p>
 <p>可以看到，’com.xxx.push:core:1.0.0’ 中的 Volley 依赖被强制指定到了1.0.18版本，项目强制使用了同一个指定版本。</p>
 
         </div>
