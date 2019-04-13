@@ -8,7 +8,7 @@
   <meta name="description" content>
   <meta name="author" content="Dixon Xu">
   <!-- Open Graph Data -->
-  <meta property="og:title" content="【源码】WindowManager系统学习">
+  <meta property="og:title" content="【笔记】WindowManager系统学习">
   <meta property="og:description" content>
   <meta property="og:site_name" content="Dixon&#39;s blog">
   <meta property="og:type" content="article">
@@ -43,7 +43,7 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-title with-background-image">
-          <p class="title">【源码】WindowManager系统学习</p>
+          <p class="title">【笔记】WindowManager系统学习</p>
           <p class="subtitle"></p>
         </div>
         <div class="site-menu with-background-image">
@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-04-10</span>
-            <span class="time">11:06:16</span>
+            <span class="time">11:18:32</span>
           </span>
           
           <!--  Categories  -->
@@ -123,6 +123,7 @@
         <!-- Post Main Content -->
         <div class="post-content">
           <p>WindowManager及其相关类的源码探究。<br><a id="more"></a></p>
+<p>本文参考自《Android进阶揭秘》，为学习笔记。</p>
 <h1 id="WindowManager"><a href="#WindowManager" class="headerlink" title="WindowManager"></a>WindowManager</h1><table>
 <thead>
 <tr>
@@ -167,7 +168,49 @@
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>一个 Activity 对应至少一个 Window（PhoneWindow） ，至少一个 WindowManager （WindowManagerImpl）。</p>
 <p>一个进程对应多个 Window（phoneWindow），多个 WindowManager（WindowManagerImpl），一个 WindowManagerGlobal。</p>
 <h4 id="关系图"><a href="#关系图" class="headerlink" title="关系图"></a>关系图</h4><p><img src="/2019/04/10/【源码】WindowManager系统学习/WindowManager关系图.png" alt="img"></p>
-<h2 id="持续完善中…"><a href="#持续完善中…" class="headerlink" title="持续完善中…"></a>持续完善中…</h2>
+<h2 id="Window-的属性"><a href="#Window-的属性" class="headerlink" title="Window 的属性"></a>Window 的属性</h2><h3 id="Type"><a href="#Type" class="headerlink" title="Type"></a>Type</h3><p>Type分三种：应用程序窗口、子窗口、系统窗口。</p>
+<p>一般来说，Type越大，显示越靠上（优先显示）。</p>
+<h5 id="应用程序窗口（Application-Window）"><a href="#应用程序窗口（Application-Window）" class="headerlink" title="应用程序窗口（Application Window）"></a>应用程序窗口（Application Window）</h5><p>1～99</p>
+<h5 id="子窗口（Sub-Window）"><a href="#子窗口（Sub-Window）" class="headerlink" title="子窗口（Sub Window）"></a>子窗口（Sub Window）</h5><p>1000～1999</p>
+<p>不能独立存在，需要附着在其它窗口才行。（如Dialog依赖Context）</p>
+<h5 id="系统窗口（System-Window）"><a href="#系统窗口（System-Window）" class="headerlink" title="系统窗口（System Window）"></a>系统窗口（System Window）</h5><p>2000～2999</p>
+<p>Toast、输入法、系统音量、系统状态栏均为系统窗口。</p>
+<h3 id="Flag"><a href="#Flag" class="headerlink" title="Flag"></a>Flag</h3><p><img src="/2019/04/10/【源码】WindowManager系统学习/Flag.png" alt="img"></p>
+<h3 id="软键盘模式"><a href="#软键盘模式" class="headerlink" title="软键盘模式"></a>软键盘模式</h3><p><img src="/2019/04/10/【源码】WindowManager系统学习/Soft.png" alt="img"></p>
+<h2 id="Window-的操作"><a href="#Window-的操作" class="headerlink" title="Window 的操作"></a>Window 的操作</h2><p>以下均为 WindowManger 处理部分。</p>
+<h3 id="状态栏的添加流程简要"><a href="#状态栏的添加流程简要" class="headerlink" title="状态栏的添加流程简要"></a>状态栏的添加流程简要</h3><p><strong>1.</strong> StatusBar.addStatusBarWindow()<br>全限定名：com.android.systemui.statusbar.phone</p>
+<p><strong>2.</strong> StatusBarWindowManager.add(View statusBarView, int barHeight)<br>作用：创建 LayoutParams 并配置 StatusBar 的属性。</p>
+<p><strong>3.</strong> WindowManager.addView(View view, ViewGroup.LayoutParams params)<br>真实实现：WindowManagerImpl<br>参数说明：第一个参数 View 就是步骤1中的 mStatusBarWindow，它继承自 FrameLayout。</p>
+<p><strong>4.</strong> WindowManagerGlobal.addView(View view, ViewGroup.LayoutParams params,<br>            Display display, Window parentWindow)<br>作用：WindowManagerGlobal 维护了三个列表 – View 列表、布局参数列表、ViewRootImpl 列表，该方法会依次 add 进三个列表中，用于 Global 管理。方法还主要创建了 ViewRootImpl，ViewRootImpl 有以下职责：</p>
+<p>&lt;1.View 树的根并管理 View 树。</p>
+<p>&lt;2.触发 View 的三大方法：测量、布局、绘制。</p>
+<p>&lt;3.输入事件的中转。</p>
+<p>&lt;4.管理 Surface。</p>
+<p>&lt;5.与 WMS 进行进程间通信。</p>
+<p><strong>5.</strong> ViewRootImpl.setView(View view, WindowManager.LayoutParams attrs, View panelParentView)</p>
+<p><strong>6.</strong> WindowSession.addToDisplay(xxx)<br>WindowSession 是 IWindowSession 类型，是 Binder 对象。<br>IWindowSession 的 Server 端实现为 Session，Session 的 addToDisplay 运行在 WMS 所在进程。</p>
+<p><strong>7.</strong> Session.addToDisplay(xxx)<br>全限定：com.android.server.wm</p>
+<p><strong>8.</strong> WMS.addWindow(xxx)<br>说明：每个应用进程对应一个Session，Session.addToDisplay() 仅仅是将操作转交给 WMS，并将 Session 自身传了进去。接下来 WMS 会将绘制工作交给对应的 Surface。</p>
+<h3 id="Activity的添加流程简要"><a href="#Activity的添加流程简要" class="headerlink" title="Activity的添加流程简要"></a>Activity的添加流程简要</h3><p><strong>疑问：按照 Activity 的生命周期不应该是在 onStart() 方法前后添加的 View 吗？为什么这里添加 DecorView 发生在 onResume() 里？难道不是绘制？</strong></p>
+<p><strong>1.</strong> ActivityThread.handleResumeActivity()方法内：</p>
+<p>&lt;1.ActivityThread.performResumeActivity(IBinder token, boolean clearHide, String reason);<br>说明：最终调用Activity.onResume()。</p>
+<p>&lt;2.Activity.getWindowManager();</p>
+<p>&lt;3.wm.addView(decor，1);</p>
+<p><strong>2.</strong> 后续步骤接上述步骤3。</p>
+<h3 id="Window-的更新流程简要"><a href="#Window-的更新流程简要" class="headerlink" title="Window 的更新流程简要"></a>Window 的更新流程简要</h3><p><strong>1.</strong> WindowManagerImpl.updateViewLayout(View view, ViewGroup.LayoutParams params)</p>
+<p><strong>2.</strong> WindowManagerGlobal.updateViewLayout(View view, ViewGroup.LayoutParams params)</p>
+<p><strong>3.</strong> ViewRootImpl.setLayoutParams(WindowManager.LayoutParams attrs, boolean newView)<br>更新布局参数列表；找到View对应的ViewRootImpl，使用它对View执行操作。</p>
+<p><strong>4.</strong> ViewRootImpl.scheduleTraversals()</p>
+<p><strong>5.</strong> Choreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);<br>Choreographer用于在下一帧渲染时添加回调 -&gt; mTraversalRunnable。所以实际下一步回调执行 ViewRootImpl.doTraversal()方法。</p>
+<p><strong>6.</strong> ViewRootImpl.doTraversal()</p>
+<p><strong>7.</strong> ViewRootImpl.performTraversals()<br>更新了 Window 视图，执行了 View 的工作流程。<br>方法内执行了：</p>
+<p>&lt;1.relayoutWindow(params, viewVisibility, insetsPending);<br>内部调用 IWindowSession，最终调用 WMS 的 relaoutWindow 方法，以更新 Window 视图。</p>
+<p>&lt;2.performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);<br>最终调用 View 的 measure，执行 View 的测量。</p>
+<p>&lt;3.performLayout(lp, mWidth, mHeight);</p>
+<p>&lt;4.performDraw();</p>
+<h3 id="操作简要总结"><a href="#操作简要总结" class="headerlink" title="操作简要总结"></a>操作简要总结</h3><p><strong>1.</strong> 操作 WMS 更新 Window，操作 View 更新 View。<br><strong>2.</strong> 创建过程中：WMI -&gt; WMG -&gt; VRI -&gt; WindowSession – Session -&gt; WMS<br>更新过程中：WMI -&gt; WMG -&gt; VRI -&gt;  View &amp;（WindowSession – Session -&gt; WMS）<br>可见与 WMS 交互一定会先经过 VRI，Session 则是 Binder（与 WMS 跨进程的桥梁）。</p>
+<p><strong>下一章 WindowManagerService…</strong></p>
+
         </div>
       </div>
     </div>
