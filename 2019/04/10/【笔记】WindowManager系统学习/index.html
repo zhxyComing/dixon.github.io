@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-04-10</span>
-            <span class="time">11:47:16</span>
+            <span class="time">15:23:50</span>
           </span>
           
           <!--  Categories  -->
@@ -123,7 +123,7 @@
         <!-- Post Main Content -->
         <div class="post-content">
           <p>WindowManager及其相关类的源码探究。<br><a id="more"></a></p>
-<p>本文参考自《Android进阶揭秘》，为学习笔记。</p>
+<p>本文参考自《Android进阶揭秘》，加之修正补充和总结，为学习笔记。</p>
 <h1 id="WindowManager"><a href="#WindowManager" class="headerlink" title="WindowManager"></a>WindowManager</h1><table>
 <thead>
 <tr>
@@ -167,7 +167,7 @@
 <p>WindowManagerImpl 操作View，如 addView，最终调用的是 WindowManagerGlobal，它是个单例，WM.addView 最终会交给它去处理。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>一个 Activity 对应至少一个 Window（PhoneWindow） ，至少一个 WindowManager （WindowManagerImpl）。</p>
 <p>一个进程对应多个 Window（phoneWindow），多个 WindowManager（WindowManagerImpl），一个 WindowManagerGlobal。</p>
-<h4 id="关系图"><a href="#关系图" class="headerlink" title="关系图"></a>关系图</h4><p><img src="/2019/04/10/【源码】WindowManager系统学习/WindowManager关系图.png" alt="img"></p>
+<h4 id="关系图"><a href="#关系图" class="headerlink" title="关系图"></a>关系图</h4><p><img src="/2019/04/10/【笔记】WindowManager系统学习/WindowManager关系图.png" alt="img"></p>
 <h2 id="Window-的属性"><a href="#Window-的属性" class="headerlink" title="Window 的属性"></a>Window 的属性</h2><h3 id="Type"><a href="#Type" class="headerlink" title="Type"></a>Type</h3><p>Type分三种：应用程序窗口、子窗口、系统窗口。</p>
 <p>一般来说，Type越大，显示越靠上（优先显示）。</p>
 <h5 id="应用程序窗口（Application-Window）"><a href="#应用程序窗口（Application-Window）" class="headerlink" title="应用程序窗口（Application Window）"></a>应用程序窗口（Application Window）</h5><p>1～99</p>
@@ -175,8 +175,8 @@
 <p>不能独立存在，需要附着在其它窗口才行。（如Dialog依赖Context）</p>
 <h5 id="系统窗口（System-Window）"><a href="#系统窗口（System-Window）" class="headerlink" title="系统窗口（System Window）"></a>系统窗口（System Window）</h5><p>2000～2999</p>
 <p>Toast、输入法、系统音量、系统状态栏均为系统窗口。</p>
-<h3 id="Flag"><a href="#Flag" class="headerlink" title="Flag"></a>Flag</h3><p><img src="/2019/04/10/【源码】WindowManager系统学习/Flag.png" alt="img"></p>
-<h3 id="软键盘模式"><a href="#软键盘模式" class="headerlink" title="软键盘模式"></a>软键盘模式</h3><p><img src="/2019/04/10/【源码】WindowManager系统学习/Soft.png" alt="img"></p>
+<h3 id="Flag"><a href="#Flag" class="headerlink" title="Flag"></a>Flag</h3><p><img src="/2019/04/10/【笔记】WindowManager系统学习/Flag.png" alt="img"></p>
+<h3 id="软键盘模式"><a href="#软键盘模式" class="headerlink" title="软键盘模式"></a>软键盘模式</h3><p><img src="/2019/04/10/【笔记】WindowManager系统学习/Soft.png" alt="img"></p>
 <h2 id="Window-的操作"><a href="#Window-的操作" class="headerlink" title="Window 的操作"></a>Window 的操作</h2><p>以下均为 WindowManger 处理部分。</p>
 <h3 id="状态栏的添加流程简要"><a href="#状态栏的添加流程简要" class="headerlink" title="状态栏的添加流程简要"></a>状态栏的添加流程简要</h3><p><strong>1.</strong> StatusBar.addStatusBarWindow()<br>全限定名：com.android.systemui.statusbar.phone</p>
 <p><strong>2.</strong> StatusBarWindowManager.add(View statusBarView, int barHeight)<br>作用：创建 LayoutParams 并配置 StatusBar 的属性。</p>
