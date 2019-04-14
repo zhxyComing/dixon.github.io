@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-04-14</span>
-            <span class="time">15:23:50</span>
+            <span class="time">15:27:19</span>
           </span>
           
           <!--  Categories  -->
@@ -145,14 +145,12 @@
 <p><strong>3.</strong>WindowManagerService 的构造方法。</p>
 <p>&lt;1.持有 IMS。</p>
 <p>&lt;2.生成 DisplayContent 用来描述一块屏幕。</p>
-<blockquote>
 <p>&lt;3.创建 WMP。WindowManagerPolicy，用来定义一个窗口策略要遵循的通用规范。</p>
 <p>&lt;4.持有 AMS。</p>
 <p>&lt;5.创建 WindowAnimator。</p>
 <p>&lt;6.*初始化 WMP（8.x以下）</p>
 <p><strong>4.</strong>WMS.displayReady</p>
 <p>初始化屏幕显示信息。</p>
-</blockquote>
 <h4 id="8-0-和-9-0-源码的不同"><a href="#8-0-和-9-0-源码的不同" class="headerlink" title="8.0 和 9.0 源码的不同"></a>8.0 和 9.0 源码的不同</h4><p><strong>补充书籍内容、修正书籍勘误。</strong></p>
 <p><strong>8.0上</strong></p>
 <p>WMS 的构造函数里，执行了 initPolicy，它的源码如下：</p>
@@ -187,16 +185,8 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> res = mPolicy.checkAddPermission(attrs, appOp);</span><br></pre></td></tr></table></figure>
 <p>通过 WMP（实现为 PhoneWindowManager）检查权限；</p>
 <p>2.</p>
-<blockquote>
-<blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; &gt; DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);</span><br><span class="line">&gt; &gt;</span><br></pre></td></tr></table></figure>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);</span><br></pre></td></tr></table></figure>
 <p>DisplayContent 用来描述一块屏幕。 <strong>Display 、DisplayContent、Window 的作用与关系后续会单出博客分析。</strong></p>
-</blockquote>
-</blockquote>
 <p>3.</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (type &gt;= FIRST_SUB_WINDOW &amp;&amp; type &lt;= LAST_SUB_WINDOW) &#123;</span><br><span class="line">    parentWindow = windowForClientLocked(<span class="keyword">null</span>, attrs.token, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure>
 <p>如果是子窗口，则找到其父窗口。</p>
