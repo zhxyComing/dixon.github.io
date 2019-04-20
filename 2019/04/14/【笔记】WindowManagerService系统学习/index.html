@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-04-14</span>
-            <span class="time">09:51:31</span>
+            <span class="time">09:59:32</span>
           </span>
           
           <!--  Categories  -->
@@ -221,7 +221,71 @@
 <p>2.WindowToken 检查或隐式创建。</p>
 <p>3.WindowState 的创建、以及和 WindowToken 关联。（此时类似于对 Activity（WindowToken）和 Window（WindowState）产生抽象关联 ）</p>
 <p>4.创建和配置 DisplayContent。</p>
-<h2 id="Window-删除简要"><a href="#Window-删除简要" class="headerlink" title="Window 删除简要"></a>Window 删除简要</h2><p>待续…</p>
+<h2 id="Window-删除简要"><a href="#Window-删除简要" class="headerlink" title="Window 删除简要"></a>Window 删除简要</h2><p><strong>1.</strong> WindowManagerGlobal.removeView(View view, boolean immediate)</p>
+<p>理解：这里的 view 可以简单理解为窗口。比如我们移除自定义的悬浮窗，直接操作移除的是 view（<code>mWindowManager.removeView(view)</code>），而不是 Window，Window 只是应用层对 View 的抽象概念</p>
+<blockquote>
+<p>Window 可以理解为是一组 View 集的抽象封装，为了方便应用层操作一系列 View，实际在 WMS 系统层中窗口是以 WindowState 的抽象形式存在的，但是无论如何抽象，WM 及 WMS 实际操作的都是 View。</p>
+</blockquote>
+<p>用途：找到 view 在 view 列表中的索引，并执行下一步。</p>
+<p><strong>2.</strong> WindowManagerGlobal.removeViewLocked(index, immediate)</p>
+<p>用途：</p>
+<p>&lt;1. 注销掉 view 对应的 InputMethodManager 输入法事件。</p>
+<p>&lt;2. 获取 view 对应的 ViewRootImpl，执行 VRI.die，同时将 view 加入到 mDyingViews 列表。</p>
+<p><strong>3.</strong> ViewRootImpl.doDie()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doDie</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mRemoved) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        mRemoved = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (mAdded) &#123;</span><br><span class="line">            dispatchDetachedFromWindow(); <span class="comment">//1.</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mAdded &amp;&amp; !mFirst) &#123;</span><br><span class="line">            destroyHardwareRenderer(); <span class="comment">//2.</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mView != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">int</span> viewVisibility = mView.getVisibility();</span><br><span class="line">                <span class="keyword">boolean</span> viewVisibilityChanged = mViewVisibility != viewVisibility;</span><br><span class="line">                <span class="keyword">if</span> (mWindowAttributesChanged || viewVisibilityChanged) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> ((relayoutWindow(mWindowAttributes, viewVisibility, <span class="keyword">false</span>)</span><br><span class="line">                                &amp; WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME) != <span class="number">0</span>) &#123;</span><br><span class="line">                            mWindowSession.finishDrawing(mWindow); <span class="comment">//3.</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                mSurface.release(); <span class="comment">//4.</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mAdded = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    WindowManagerGlobal.getInstance().doRemoveView(<span class="keyword">this</span>); <span class="comment">//5.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&lt;1.dispatchDetachedFromWindow()<br>如果该窗口有子 View，就销毁 View。</p>
+<p>&lt;2.destroyHardwareRenderer()</p>
+<p>&lt;3.mWindowSession.finishDrawing(mWindow)</p>
+<p>&lt;4.mSurface.release()</p>
+<p>&lt;5.WindowManagerGlobal.getInstance().doRemoveView(this)</p>
+<p><strong>4.</strong> WindowManagerGlobal.doRemoveView(ViewRootImpl root)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doRemoveView</span><span class="params">(ViewRootImpl root)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> index = mRoots.indexOf(root);</span><br><span class="line">        <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            mRoots.remove(index);</span><br><span class="line">            mParams.remove(index);</span><br><span class="line">            <span class="keyword">final</span> View view = mViews.remove(index);</span><br><span class="line">            mDyingViews.remove(view);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ThreadedRenderer.sTrimForeground &amp;&amp; ThreadedRenderer.isAvailable()) &#123;</span><br><span class="line">        doTrimForeground();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>前面说过一个 Window 对应一个 ViewRootImpl。所以这里就是把 View 对应的 VRI、LayoutParams 以及 View 本身从 WMG 的保存列表中移除。这步发生在 WMS 移除之后。</p>
+<p><strong>5.</strong> WindowManagerGlobal.dispatchDetachedFromWindow()</p>
+<p>在第3步被调用。</p>
+<p>主要执行了跨进程的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mWindowSession.remove(mWindow);</span><br></pre></td></tr></table></figure>
+<p>mWindowSession 对应 Server 端的 Session。而 Session 的操作又是通过 WMS 来完成的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/wm/Session</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(IWindow window)</span> </span>&#123;</span><br><span class="line">    mService.removeWindow(<span class="keyword">this</span>, window);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>6.</strong> WMS.removeWindow</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">removeWindow</span><span class="params">(Session session, IWindow client)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(mWindowMap) &#123;</span><br><span class="line">        WindowState win = windowForClientLocked(session, client, <span class="keyword">false</span>);</span><br><span class="line">        <span class="keyword">if</span> (win == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        win.removeIfPossible();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>6.</strong> WindowState.removeIfPossible()</p>
+<p>进行条件判断（如正在播放动画就不能移除），满足条件后执行下一步。</p>
+<p><strong>6.</strong> WindowState.removeImmediately()</p>
+<table>
+<thead>
+<tr>
+<th>应用层</th>
+<th>—</th>
+<th>系统层</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Surface</td>
+<td>—</td>
+<td>SurfaceFinger</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>—</td>
+<td>WindowState</td>
+</tr>
+<tr>
+<td>IWindowSession</td>
+<td>—</td>
+<td>Session</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mSession.windowRemovedLocked();</span><br></pre></td></tr></table></figure>
+<p>将 View 对应的 Session 从列表中移除，并清除 Session 对应的 SurfaceSession。</p>
+<blockquote>
+<p>SurfaceSession 是 SurfaceFlinger 的一个链接，用来创建系统层与应用层连通的 Surface，该 Surface 可以把图像信息渲染到屏幕上。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mService.postWindowRemoveCleanupLocked(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<p>剩余清理工作，如移除 token、移除输入事件等。</p>
+<h3 id="Window-删除总结"><a href="#Window-删除总结" class="headerlink" title="Window 删除总结"></a>Window 删除总结</h3><p><img src="/2019/04/14/【笔记】WindowManagerService系统学习/WMS删除总结.png" alt="WMS删除总结"></p>
 
         </div>
       </div>
