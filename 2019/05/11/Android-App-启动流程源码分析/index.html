@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-05-11</span>
-            <span class="time">20:17:16</span>
+            <span class="time">20:24:05</span>
           </span>
           
           <!--  Categories  -->
@@ -134,13 +134,13 @@
 <li>AMS 启动目标 App 的 Activity。</li>
 </ol>
 <h2 id="详细步骤"><a href="#详细步骤" class="headerlink" title="详细步骤"></a>详细步骤</h2><p>下面将分析每一步骤在 Android 应用程序进程中所做的事。</p>
-<h4 id="步骤1：Launcher-通知-AMS-启动-App"><a href="#步骤1：Launcher-通知-AMS-启动-App" class="headerlink" title="步骤1：Launcher 通知 AMS 启动 App"></a>步骤1：Launcher 通知 AMS 启动 App</h4><p><img src="https://upload-images.jianshu.io/upload_images/6103019-a61a4ea30a0cce78.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Launcher 通知 AMS 启动 App.png"></p>
+<h4 id="步骤1：Launcher-通知-AMS-启动-App"><a href="#步骤1：Launcher-通知-AMS-启动-App" class="headerlink" title="步骤1：Launcher 通知 AMS 启动 App"></a>步骤1：Launcher 通知 AMS 启动 App</h4><p><img src="/2019/05/11/Android-App-启动流程源码分析/Launcher 通知 AMS 启动 App.png" alt="Launcher 通知 AMS 启动 App.png"></p>
 <p>如图，Launcher 的 Activity 的经过层层调用，最终交给 AMS 去启动目标 App。</p>
 <p>这里，IActivityManager 是应用程序进程与 SystemServer（AMS 所在进程）通信的 Binder 在 Client 端的代理，因为是应用程序进程向 AMS 发消息，所以应用程序进程是 Client 端。</p>
 <h4 id="步骤2：AMS-通知-Launcher-休眠。"><a href="#步骤2：AMS-通知-Launcher-休眠。" class="headerlink" title="步骤2：AMS 通知 Launcher 休眠。"></a>步骤2：AMS 通知 Launcher 休眠。</h4><p>AMS 在收到 Launcher 请求之后，会去目标 App 的 AndroidManifest 中检查 Activity 是否存在，不存在则抛出 ActivityNotFoundException。如果校验没有问题，则会将要启动的页面保存起来，然后通知 Launcher 休眠。</p>
 <p>通知 Launcher 休眠也是 Binder 通信过程，由于这次是 AMS 向 Launcher 发消息，所以 AMS 是 Client 端。它的 Client 端类为 ApplicationThreadProxy，它将方法传给 Server 端（应用程序进程）的 ApplicationThread。你搜索不到 ApplicationThread，因为它是 ActivityThread 的内部类。</p>
 <p>下面流程图只分析 Launcher 休眠的过程，即在应用程序进程的具体执行步骤，因为对于应用层开发人员来说这些方法调用相较 AMS 复杂的方法传递更具实际开发意义。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-9fbe4181cbca995c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AMS 通知 Launcher 休眠.png"></p>
+<p><img src="/2019/05/11/Android-App-启动流程源码分析/AMS 通知 Launcher 休眠.png" alt="AMS 通知 Launcher 休眠.png"></p>
 <p>其中 <code>performPauseActivity()</code> 最终执行了 <code>Activity.onPause()</code>。</p>
 <h4 id="步骤3：AMS-启动目标-App-进程"><a href="#步骤3：AMS-启动目标-App-进程" class="headerlink" title="步骤3：AMS 启动目标 App 进程"></a>步骤3：AMS 启动目标 App 进程</h4><p>Launcher 休眠之后，通过 IActivityManager 告知了 AMS，然后 AMS 就可以启动目标 Activity 了，但是在此之前，还需要判断目标程序的进程是否已经启动，如果没有启动，则会做如下工作：</p>
 <ol>
@@ -150,14 +150,14 @@
 <li>通知 AMS，App 初始化完毕。</li>
 </ol>
 <p>从 <code>main</code> 函数开始，进入应用程序进程，所以下面流程图也是从 <code>main</code> 方法开始。期间与 AMS 交互过程中 AMS 所在进程的方法调用已省略。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-a9a27f6810ece649.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AMS 启动目标 App 进程.png"></p>
+<p><img src="/2019/05/11/Android-App-启动流程源码分析/AMS 启动目标 App 进程.png" alt="AMS 启动目标 App 进程.png"></p>
 <p>其中 <code>ActivityThread.handleBindApplication</code> 方法中创建了 Instrumentation、ContextImpl、Application，并间接调用了 <code>Application.onCreate()</code>。</p>
 <h4 id="步骤4：AMS-启动目标-App-的-Activity"><a href="#步骤4：AMS-启动目标-App-的-Activity" class="headerlink" title="步骤4：AMS 启动目标 App 的 Activity"></a>步骤4：AMS 启动目标 App 的 Activity</h4><p>应用程序进程启动之后，就可以正常启动 Activity 了。</p>
 <p>步骤3 AMS 在调用 <code>ApplicationThread.bindApplication()</code> 之后，最终会调用<code>app.thread.scheduleLaunchActivity()</code>，将方法通过 Binder 传给 <code>ApplicationThread.scheduleLaunchActivity()</code>，其实际执行方法为<code>ActivityThread.handleLaunchActivity()</code>。</p>
 <p>之后将调用 <code>ActivityThread.performLaunchActivity()</code>，该方法将创建我们熟悉的 Context，并通过 ClassLoader 创建 Activity，最终执行 <code>Activity.onCreate()</code>。</p>
 <p><code>ActivityThread.handleLaunchActivity()</code> 还执行了 <code>Activity.onRestart()</code>、<code>Activity.onStart()</code>、<code>Activity.onResume()</code> 等熟悉的生命周期方法。</p>
 <p>下面的流程图包括了 Activity 创建运行过程中非常重要的方法，关于 Activity 生命周期方法的执行顺序还可以参考 <a href="https://www.jianshu.com/p/4b33361f69fc" target="_blank" rel="noopener">源码分析 Activity 可见性真实时机</a>。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-40a592ae2a83de6a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AMS 启动目标 App 的 Activity.png"></p>
+<p><img src="/2019/05/11/Android-App-启动流程源码分析/AMS 启动目标 App 的 Activity.png" alt="AMS 启动目标 App 的 Activity.png"></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上就是 Launcher 启动 App 过程中，应用程序进程涉及到的关键代码。</p>
 <p>熟悉以上流程可以帮助理解 Android 启动原理，为 Android 插件化、组件化铺平道路。</p>
 <p>[TOC]</p>
