@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-03-23</span>
-            <span class="time">20:24:05</span>
+            <span class="time">20:47:46</span>
           </span>
           
           <!--  Categories  -->
@@ -208,7 +208,7 @@
 <p>关于<code>ApplicationInfo.flags</code>各位可以百度另行了解，这里这段代码的意义为：</p>
 <p><strong>API版本为&gt;27，则返回 usesCleartextTraffic = false。</strong></p>
 <p>整个系统调用流程如下：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-7e210ae2565e9cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="流程图.png"></p>
+<p><img src="Android 9 http适配原理/流程图.png" alt="流程图.png"></p>
 <p>但是到此为止，我们的问题–【如何打破网络限制】还没有得到解决。</p>
 <p>上述代码里，<code>ManifestConfigSource</code>会优先调用<code>XmlConfigSource</code>。</p>
 <p>所以我们可以初步得出：<strong>通过在<code>AndroidManifest</code>中配置<code>xml</code>文件，就能打破限制。</strong>那么如何配置呢？</p>
@@ -220,7 +220,7 @@
 <li>注释1处可以看出，该网络安全配置信息来自<code>application</code>;</li>
 </ol>
 <p>于是我在<code>AndroidManifest-application</code>尝试输入net…，果然as的代码提示就展示出了我要的配置：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-80e71f678c77bfeb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="application.png"></p>
+<p><img src="Android 9 http适配原理/application.png" alt="application.png"></p>
 <p><code>networkSecurityConfig</code>需要的是个xml文件，那么这个xml文件该如何配置才能绕过网络限制呢？</p>
 <p>回到刚才的<code>XmlConfigSource</code>源码，这里我们需要关注俩个地方：</p>
 <p>源码1：</p>

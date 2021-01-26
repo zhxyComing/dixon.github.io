@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-04-13</span>
-            <span class="time">20:24:05</span>
+            <span class="time">20:47:46</span>
           </span>
           
           <!--  Categories  -->
@@ -129,23 +129,23 @@
 <p>下面分别针对三方配置给出教程。</p>
 <h2 id="Charles-配置"><a href="#Charles-配置" class="headerlink" title="Charles 配置"></a>Charles 配置</h2><h3 id="安装证书"><a href="#安装证书" class="headerlink" title="安装证书"></a>安装证书</h3><p><strong>Help -&gt; SSL Proxying -&gt; Install Charles Root Certificate</strong> 安装证书。</p>
 <p>安装完毕后，默认证书名为 Charles Proxy CA，此时是不受信任的，双击出现下面页面：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-b794e8b985b53c51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img1.png" alt="img.png"></p>
 <p>选择始终信任。</p>
 <h3 id="Proxy设置"><a href="#Proxy设置" class="headerlink" title="Proxy设置"></a>Proxy设置</h3><p><strong>Proxy -&gt; Proxy Settings</strong>，如下勾选</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-7bf499e714b5bc37.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img2.png" alt="img.png"></p>
 <p><strong>Proxy -&gt; SSL Proxy Settings</strong>，如下 add ：Host 为 *，Port 为 443。（尽量不要勾选其它无关域名）</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-a2cfa146ff806ce4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img3.png" alt="img.png"></p>
 <h2 id="Android-手机配置"><a href="#Android-手机配置" class="headerlink" title="Android 手机配置"></a>Android 手机配置</h2><p>Android 手机挂 Mac 代理比较常见且简单，这里跳过，直接说明安装证书。</p>
 <p>Android 手机安装 Charles 证书建议只选用存储卡安装，不要选择浏览器下载，具体方式如下：</p>
 <p><strong>Help -&gt; SSL Proxying -&gt; Save Charles Root Certificate</strong> 将签名保存到 Mac 电脑本地，之后将签名转移到 Android 手机 sd 卡下，这里我使用 adb 命令直接将证书推到手机 sd 卡根目录下：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push /自己的路径/Desktop/charles-ssl-proxying-certificate.pem /storage/emulated/<span class="number">0</span></span><br></pre></td></tr></table></figure>
 <p>打开手机设置，找到安全设置 -&gt; 设备管理与凭证 -&gt; 从存储卡安装 （不同手机目录、名称不太一样），找到刚才的证书，点击安装。这里需要注意，<strong>凭据用途选择 wifi 或无限网络</strong>，如图：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-df318ca8b549a029.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img4.png" alt="img.png"></p>
 <p>点击确定，保存。</p>
 <p>Android 不同于 iphone ，没有信任一说，安装即信任。</p>
 <h2 id="Android-App-配置"><a href="#Android-App-配置" class="headerlink" title="Android App 配置"></a>Android App 配置</h2><p>至此网上很多教程就截止了，但是因为要抓 Android App 的包，Google 出于安全考虑对 App 做了限制导致我们如上配置仍然不能抓到 https 的接口，我们需要将证书打进我们要抓的 App 里，才能实现抓包。</p>
 <p>&lt;1. 将刚才导出的证书移动到 res/raw 工程目录下，如图：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-79b4d3916ab91c5a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img5.png" alt="img.png"></p>
 <p>&lt;2. 在 res/xml 文件夹下新建 network_security_config.xml 文件，代码如下配置：</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;</span><br><span class="line">&lt;network-security-config&gt;</span><br><span class="line">    &lt;base-config cleartextTrafficPermitted=<span class="string">"true"</span> /&gt;</span><br><span class="line">    &lt;domain-config&gt;</span><br><span class="line">        &lt;domain includeSubdomains="true"&gt;你要抓的域名&lt;/domain&gt;</span><br><span class="line">        &lt;domain includeSubdomains="true"&gt;dbeta.me&lt;/domain&gt;</span><br><span class="line">        &lt;trust-anchors&gt;</span><br><span class="line">            &lt;certificates src=<span class="string">"@raw/charles"</span>/&gt;</span><br><span class="line">        &lt;/trust-anchors&gt;</span><br><span class="line">    &lt;/domain-config&gt;</span><br><span class="line">&lt;/network-security-config&gt;</span><br></pre></td></tr></table></figure>
 <p>其中 domain 就是 App 允许 Charlse 捕获的域名集合，certificates 则是刚才的 charles 证书。</p>
@@ -155,7 +155,7 @@
 <p>&lt;3. 在 Application 里配置 xml 文件。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;application</span><br><span class="line">        android:networkSecurityConfig=<span class="string">"@xml/network_security_config"</span></span><br><span class="line">        ...&gt;</span><br></pre></td></tr></table></figure>
 <p>至此配置完毕，此时就能抓到刚才配置的域名接口了，下面分别是能抓包和不能抓包的接口对比：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/6103019-25e56e33e676252b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img.png"></p>
+<p><img src="/2019/04/13/Mac 下配置 Charles 抓包 Android App 环境/img6.png" alt="img.png"></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Mac 上使用 Charles 抓 Android App 包有很大缺陷，不仅配置繁琐复杂，而且最后的效果并不能令人满意。比如上述的配置，作者测试后发现并不能抓依赖库中的接口，即使是在 xml 文件中配置了 domain，猜测必须配置在目标 module 的 Application 中才能生效。</p>
 <p>更多参考 : <a href="https://developer.android.com/training/articles/security-config?hl=zh-CN" target="_blank" rel="noopener">Android 官方网络安全性配置</a></p>
 
