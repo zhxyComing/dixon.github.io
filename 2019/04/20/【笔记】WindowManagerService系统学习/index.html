@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content>
+  <meta name="author" content="Dixon Xu">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="【笔记】WindowManagerService 系统学习">
+  <meta property="og:description" content>
+  <meta property="og:site_name" content="Dixon&#39;s blog">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="http://yoursite.com">
+  
+    <link rel="alternate" href="/atom.xml" title="Dixon&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>Dixon's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/images/cover6.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">【笔记】WindowManagerService 系统学习</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/zhxyComing">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1198097193@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By Dixon Xu</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2019-04-20</span>
+            <span class="time">19:39:47</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/Android/">Android</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/笔记/">#笔记</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>WindowManagerService 及其相关类的源码探究。<br><a id="more"></a></p>
+<p>本文参考自《Android进阶揭秘》，加之修正补充和总结，为学习笔记。</p>
+<h2 id="WMS-职责"><a href="#WMS-职责" class="headerlink" title="WMS 职责"></a>WMS 职责</h2><p><strong>窗口的管理</strong></p>
+<p>注意是窗口的管理（不是View的管理），负责窗口的启动、添加和删除。</p>
+<p>窗口管理的核心成员：DisplayContent、WindowToken、WindowState。</p>
+<p><strong>窗口动画</strong></p>
+<p>WindowAnimator</p>
+<p><strong>输入事件的中转</strong></p>
+<p>InputManagerService（IMS）</p>
+<p><strong>Surface 管理</strong></p>
+<p>每个窗口都有一个 Surface，负责窗口的绘制工作。而 Surface 由 WMS 分配。</p>
+<p>相关类：SurfaceFlinger</p>
+<h2 id="WMS-创建"><a href="#WMS-创建" class="headerlink" title="WMS 创建"></a>WMS 创建</h2><p><strong>1.</strong>SystemServer.startOtherServices()</p>
+<p>&lt;1.创建 Watchdog，用来监控系统服务运行情况；</p>
+<p>&lt;2.创建 IMS。</p>
+<p>&lt;3.执行 WMS.main，创建 WMS。</p>
+<p>&lt;4.将 IMS、WMS 注册到 ServiceManager 中。（客户端要使用 WMS 需要先去 ServiceManager 查询获取）</p>
+<p><strong>2.</strong><a href="http://dixonxz.cn/2019/03/28/%E3%80%90%E7%AC%94%E8%AE%B0%E3%80%91WMS%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B%E4%B8%B2%E8%A1%8C%E6%93%8D%E4%BD%9C/" target="_blank" rel="noopener">WMS创建过程中的线程串行操作</a></p>
+<p>这里 SystemServer.main 会等待 WMS 创建完毕才会继续执行，即跨线程同步操作。</p>
+<p>WindowManagerService.main() 方法最终执行 new WindowManagerService。</p>
+<p><strong>3.</strong>WindowManagerService 的构造方法。</p>
+<p>&lt;1.持有 IMS。</p>
+<p>&lt;2.生成 DisplayContent 用来描述一块屏幕。</p>
+<p>&lt;3.创建 WMP。WindowManagerPolicy，用来定义一个窗口策略要遵循的通用规范。</p>
+<p>&lt;4.持有 AMS。</p>
+<p>&lt;5.创建 WindowAnimator。</p>
+<p>&lt;6.*初始化 WMP（8.x以下）</p>
+<p><strong>4.</strong>WMS.displayReady</p>
+<p>初始化屏幕显示信息。</p>
+<h4 id="8-0-和-9-0-源码的不同"><a href="#8-0-和-9-0-源码的不同" class="headerlink" title="8.0 和 9.0 源码的不同"></a>8.0 和 9.0 源码的不同</h4><p><strong>补充书籍内容、修正书籍勘误。</strong></p>
+<p><strong>8.0上</strong></p>
+<p>WMS 的构造函数里，执行了 initPolicy，它的源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">UiThread.getHandler().runWithScissors(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        WindowManagerPolicyThread.set(Thread.currentThread(), Looper.myLooper());</span><br><span class="line">        mPolicy.init(mContext, WindowManagerService.<span class="keyword">this</span>, WindowManagerService.<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>可以看出这段类似于<a href="http://dixonxz.cn/2019/03/28/%E3%80%90%E7%AC%94%E8%AE%B0%E3%80%91WMS%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B%E4%B8%B2%E8%A1%8C%E6%93%8D%E4%BD%9C/" target="_blank" rel="noopener">WMS创建过程中的线程串行操作</a>中的跨线程串行操作，所以在8.x系统及以下，这段的线程操作为：</p>
+<p><img src="/2019/04/20/【笔记】WindowManagerService系统学习/8.0WMS跨线程.png" alt="8.0WMS跨线程"></p>
+<p><strong>9.0上</strong></p>
+<p>initPolicy() 被放到了 WMS.onInitReady() 方法里：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onInitReady</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    initPolicy();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Add ourself to the Watchdog monitors.</span></span><br><span class="line">    Watchdog.getInstance().addMonitor(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    openSurfaceTransaction();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        createWatermarkInTransaction();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        closeSurfaceTransaction(<span class="string">"createWatermarkInTransaction"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    showEmulatorDisplayOverlayIfNeeded();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而 onInitReady() 方法则在 SystemServer.startOtherServices()、WMS 初始化完毕后执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">wm = WindowManagerService.main(context, inputManager,</span><br><span class="line">     mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL,</span><br><span class="line">     !mFirstBoot, mOnlyCore, <span class="keyword">new</span> PhoneWindowManager());</span><br><span class="line">ServiceManager.addService(Context.WINDOW_SERVICE, wm, <span class="comment">/* allowIsolated= */</span> <span class="keyword">false</span>,</span><br><span class="line">     DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PROTO);</span><br><span class="line">ServiceManager.addService(Context.INPUT_SERVICE, inputManager,</span><br><span class="line">     <span class="comment">/* allowIsolated= */</span> <span class="keyword">false</span>, DUMP_FLAG_PRIORITY_CRITICAL);</span><br><span class="line">traceEnd();</span><br><span class="line"></span><br><span class="line">traceBeginAndSlog(<span class="string">"SetWindowManagerService"</span>);</span><br><span class="line">mActivityManagerService.setWindowManager(wm);</span><br><span class="line">traceEnd();</span><br><span class="line"></span><br><span class="line">traceBeginAndSlog(<span class="string">"WindowManagerServiceOnInitReady"</span>);</span><br><span class="line">wm.onInitReady();</span><br></pre></td></tr></table></figure>
+<p>所以 9.0 系统及以上，这段跨线程操作为：</p>
+<p><img src="/2019/04/20/【笔记】WindowManagerService系统学习/9.0WMS跨线程.png" alt="9.0WMS跨线程"></p>
+<p>9.0上不再有多次跨线程同步操作，逻辑上更合理、安全。（8.0上，WMP 初始化完成后，才算完成 WMS 的创建，而在 9.0 上将 WMS 的初始化与 WMP 分离开来。）</p>
+<h2 id="WMS-重要成员变量"><a href="#WMS-重要成员变量" class="headerlink" title="WMS 重要成员变量"></a>WMS 重要成员变量</h2><p><strong>mPolicy : WMP</strong></p>
+<p>定制窗口层级，定制特殊窗口类型，制定布局和调度。</p>
+<p><strong>mSeeions : ArraySet</strong></p>
+<p>WM 笔记中可以看到通讯流程，Session 负责 WM 与 WMS 的跨进程通信。</p>
+<p>WMS 保存 Session 记录所有向 WMS 提出窗口管理服务的客户端。</p>
+<p><strong>mWindowMap ：WindowHashMap</strong></p>
+<p>key 为 Binder，value 为 WindowState。</p>
+<p>WindowState 用来保存窗口的信息，即用来描述窗口。</p>
+<p>所以 mWindowMap 就是用来保存 WMS 中各种窗口信息的集合。</p>
+<p><strong>AppWindowToken</strong></p>
+<p>WindowToken 是窗口令牌，向 WMS 申请新创建一个窗口，需要向 WMS 出示有效的 WindowToken。</p>
+<p>AppWindowToken 是 WindowToken 的子类，用来描述<strong>应用程序</strong>的 WindowToken，应用程序中每个 Activity 对应一个 AppWindowToken。</p>
+<p>WindowToken 会将同一个 Activity （或组件）的所有窗口（WindowState）关联起来。</p>
+<h2 id="Window-的添加简要"><a href="#Window-的添加简要" class="headerlink" title="Window 的添加简要"></a>Window 的添加简要</h2><h4 id="WM-部分回顾"><a href="#WM-部分回顾" class="headerlink" title="WM 部分回顾"></a>WM 部分回顾</h4><p>WMI -&gt; WMG -&gt; VRI -&gt; WindowSession – Session -&gt; WMS</p>
+<p>最终执行 WMS.addWindow()</p>
+<h4 id="WMS-部分流程"><a href="#WMS-部分流程" class="headerlink" title="WMS 部分流程"></a>WMS 部分流程</h4><p><strong>WMS.addWindow()中</strong></p>
+<p>1.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> res = mPolicy.checkAddPermission(attrs, appOp);</span><br></pre></td></tr></table></figure>
+<p>通过 WMP（实现为 PhoneWindowManager）检查权限；</p>
+<p>2.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);</span><br></pre></td></tr></table></figure>
+<p>DisplayContent 用来描述一块屏幕。 <strong>Display 、DisplayContent、Window 的作用与关系后续会单出博客分析。</strong></p>
+<p>3.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (type &gt;= FIRST_SUB_WINDOW &amp;&amp; type &lt;= LAST_SUB_WINDOW) &#123;</span><br><span class="line">    parentWindow = windowForClientLocked(<span class="keyword">null</span>, attrs.token, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure>
+<p>如果是子窗口，则找到其父窗口。</p>
+<p>4.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WindowToken token = displayContent.getWindowToken(</span><br><span class="line">        hasParent ? parentWindow.mAttrs.token : attrs.token);</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> rootType = hasParent ? parentWindow.mAttrs.type : type;</span><br></pre></td></tr></table></figure>
+<p>首先通过 displayContent 获取 WindowToken。</p>
+<p>当前添加的 Window 的 type 由父 Window 决定，没有则使用本身的 type。</p>
+<p>5.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (token == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (rootType &gt;= FIRST_APPLICATION_WINDOW &amp;&amp; rootType &lt;= LAST_APPLICATION_WINDOW) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add application window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_INPUT_METHOD) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add input method window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_VOICE_INTERACTION) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add voice interaction window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_WALLPAPER) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add wallpaper window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_DREAM) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add Dream window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_QS_DIALOG) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add QS dialog window with unknown token "</span></span><br><span class="line">              + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rootType == TYPE_ACCESSIBILITY_OVERLAY) &#123;</span><br><span class="line">        Slog.w(TAG_WM, <span class="string">"Attempted to add Accessibility overlay window with unknown token "</span></span><br><span class="line">                + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">        <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (type == TYPE_TOAST) &#123;</span><br><span class="line">        <span class="comment">// Apps targeting SDK above N MR1 cannot arbitrary add toast windows.</span></span><br><span class="line">        <span class="keyword">if</span> (doesAddToastWindowRequireToken(attrs.packageName, callingUid,</span><br><span class="line">                parentWindow)) &#123;</span><br><span class="line">            Slog.w(TAG_WM, <span class="string">"Attempted to add a toast window with unknown token "</span></span><br><span class="line">                    + attrs.token + <span class="string">".  Aborting."</span>);</span><br><span class="line">            <span class="keyword">return</span> WindowManagerGlobal.ADD_BAD_APP_TOKEN;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>接下来会对 WindowToken 判断，其中返回 ADD_BAD_APP_TOKEN 说明当前 WindowToken 不能为空，否则可以为空，系统会自行创建。</p>
+<p>6.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">token = <span class="keyword">new</span> WindowToken(<span class="keyword">this</span>, binder, type, <span class="keyword">false</span>, displayContent,</span><br><span class="line">        session.mCanAddInternalSystemWindow);</span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span> (rootType &gt;= FIRST_APPLICATION_WINDOW &amp;&amp; rootType &lt;= LAST_APPLICATION_WINDOW) &#123;</span><br><span class="line">                atoken = token.asAppWindowToken();</span><br></pre></td></tr></table></figure>
+<p>经过层层筛选，隐式创建 WindowToken。</p>
+<p>如果窗口 type 为应用程序，则转为应用程序窗口的 AppWindowToken。</p>
+<p>7.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> WindowState win = <span class="keyword">new</span> WindowState(<span class="keyword">this</span>, session, client, token, parentWindow,</span><br><span class="line">        appOp[<span class="number">0</span>], seq, attrs, viewVisibility, session.mUid,</span><br><span class="line">        session.mCanAddInternalSystemWindow);</span><br></pre></td></tr></table></figure>
+<p>创建 WindowState，它保存有窗口的所有状态信息，WMS 中代表一个窗口。</p>
+<p>其中 client 指的是 IWindow，它会将 WMS 中窗口管理的操作回调给 ViewRootImpl。</p>
+<p>8.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mPolicy.adjustWindowParamsLw(win.mAttrs);</span><br></pre></td></tr></table></figure>
+<p>根据 Type 对窗口的 LayoutParams 进行调整。</p>
+<p>9.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res = mPolicy.prepareAddWindowLw(win, attrs);</span><br></pre></td></tr></table></figure>
+<p>准备将窗口添加到系统中。</p>
+<p>10.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mWindowMap.put(client.asBinder(), win);</span><br></pre></td></tr></table></figure>
+<p>上文说 mWindowMap 就是用来保存 WMS 中各种窗口信息的集合，这里将创建的 WindowState 添加到该 Map 里。</p>
+<p>11.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">win.mToken.addWindow(win);</span><br></pre></td></tr></table></figure>
+<p>将 WindowState 添加到对应的 WindowToken 中。</p>
+<h4 id="addWindow-完成的工作"><a href="#addWindow-完成的工作" class="headerlink" title="addWindow 完成的工作"></a>addWindow 完成的工作</h4><p>1.窗口检查。</p>
+<p>2.WindowToken 检查或隐式创建。</p>
+<p>3.WindowState 的创建、以及和 WindowToken 关联。（此时类似于对 Activity（WindowToken）和 Window（WindowState）产生抽象关联 ）</p>
+<p>4.创建和配置 DisplayContent。</p>
+<h2 id="Window-删除简要"><a href="#Window-删除简要" class="headerlink" title="Window 删除简要"></a>Window 删除简要</h2><p><strong>1.</strong> WindowManagerGlobal.removeView(View view, boolean immediate)</p>
+<p>理解：这里的 view 可以简单理解为窗口。比如我们移除自定义的悬浮窗，直接操作移除的是 view（<code>mWindowManager.removeView(view)</code>），而不是 Window，Window 只是应用层对 View 的抽象概念</p>
+<blockquote>
+<p>Window 可以理解为是一组 View 集的抽象封装，为了方便应用层操作一系列 View，实际在 WMS 系统层中窗口是以 WindowState 的抽象形式存在的，但是无论如何抽象，WM 及 WMS 实际操作的都是 View。</p>
+</blockquote>
+<p>用途：找到 view 在 view 列表中的索引，并执行下一步。</p>
+<p><strong>2.</strong> WindowManagerGlobal.removeViewLocked(index, immediate)</p>
+<p>用途：</p>
+<p>&lt;1. 注销掉 view 对应的 InputMethodManager 输入法事件。</p>
+<p>&lt;2. 获取 view 对应的 ViewRootImpl，执行 VRI.die，同时将 view 加入到 mDyingViews 列表。</p>
+<p><strong>3.</strong> ViewRootImpl.doDie()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doDie</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mRemoved) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        mRemoved = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (mAdded) &#123;</span><br><span class="line">            dispatchDetachedFromWindow(); <span class="comment">//1.</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mAdded &amp;&amp; !mFirst) &#123;</span><br><span class="line">            destroyHardwareRenderer(); <span class="comment">//2.</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mView != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">int</span> viewVisibility = mView.getVisibility();</span><br><span class="line">                <span class="keyword">boolean</span> viewVisibilityChanged = mViewVisibility != viewVisibility;</span><br><span class="line">                <span class="keyword">if</span> (mWindowAttributesChanged || viewVisibilityChanged) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> ((relayoutWindow(mWindowAttributes, viewVisibility, <span class="keyword">false</span>)</span><br><span class="line">                                &amp; WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME) != <span class="number">0</span>) &#123;</span><br><span class="line">                            mWindowSession.finishDrawing(mWindow); <span class="comment">//3.</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                mSurface.release(); <span class="comment">//4.</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mAdded = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    WindowManagerGlobal.getInstance().doRemoveView(<span class="keyword">this</span>); <span class="comment">//5.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&lt;1.dispatchDetachedFromWindow()<br>如果该窗口有子 View，就销毁 View。</p>
+<p>&lt;2.destroyHardwareRenderer()</p>
+<p>&lt;3.mWindowSession.finishDrawing(mWindow)</p>
+<p>&lt;4.mSurface.release()</p>
+<p>&lt;5.WindowManagerGlobal.getInstance().doRemoveView(this)</p>
+<p><strong>4.</strong> WindowManagerGlobal.doRemoveView(ViewRootImpl root)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doRemoveView</span><span class="params">(ViewRootImpl root)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> index = mRoots.indexOf(root);</span><br><span class="line">        <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            mRoots.remove(index);</span><br><span class="line">            mParams.remove(index);</span><br><span class="line">            <span class="keyword">final</span> View view = mViews.remove(index);</span><br><span class="line">            mDyingViews.remove(view);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ThreadedRenderer.sTrimForeground &amp;&amp; ThreadedRenderer.isAvailable()) &#123;</span><br><span class="line">        doTrimForeground();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>前面说过一个 Window 对应一个 ViewRootImpl。所以这里就是把 View 对应的 VRI、LayoutParams 以及 View 本身从 WMG 的保存列表中移除。这步发生在 WMS 移除之后。</p>
+<p><strong>5.</strong> WindowManagerGlobal.dispatchDetachedFromWindow()</p>
+<p>在第3步被调用。</p>
+<p>主要执行了跨进程的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mWindowSession.remove(mWindow);</span><br></pre></td></tr></table></figure>
+<p>mWindowSession 对应 Server 端的 Session。而 Session 的操作又是通过 WMS 来完成的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/wm/Session</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(IWindow window)</span> </span>&#123;</span><br><span class="line">    mService.removeWindow(<span class="keyword">this</span>, window);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>6.</strong> WMS.removeWindow</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">removeWindow</span><span class="params">(Session session, IWindow client)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(mWindowMap) &#123;</span><br><span class="line">        WindowState win = windowForClientLocked(session, client, <span class="keyword">false</span>);</span><br><span class="line">        <span class="keyword">if</span> (win == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        win.removeIfPossible();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>6.</strong> WindowState.removeIfPossible()</p>
+<p>进行条件判断（如正在播放动画就不能移除），满足条件后执行下一步。</p>
+<p><strong>6.</strong> WindowState.removeImmediately()</p>
+<table>
+<thead>
+<tr>
+<th>应用层</th>
+<th>—</th>
+<th>系统层</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Surface</td>
+<td>—</td>
+<td>SurfaceFinger</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>—</td>
+<td>WindowState</td>
+</tr>
+<tr>
+<td>IWindowSession</td>
+<td>—</td>
+<td>Session</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mSession.windowRemovedLocked();</span><br></pre></td></tr></table></figure>
+<p>将 View 对应的 Session 从列表中移除，并清除 Session 对应的 SurfaceSession。</p>
+<blockquote>
+<p>SurfaceSession 是 SurfaceFlinger 的一个链接，用来创建系统层与应用层连通的 Surface，该 Surface 可以把图像信息渲染到屏幕上。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mService.postWindowRemoveCleanupLocked(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<p>剩余清理工作，如移除 token、移除输入事件等。</p>
+<h3 id="Window-删除总结"><a href="#Window-删除总结" class="headerlink" title="Window 删除总结"></a>Window 删除总结</h3><p><img src="/2019/04/20/【笔记】WindowManagerService系统学习/WMS删除总结.png" alt="WMS删除总结"></p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        </p><p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+

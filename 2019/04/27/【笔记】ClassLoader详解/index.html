@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content>
+  <meta name="author" content="Dixon Xu">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="【笔记】ClassLoader详解">
+  <meta property="og:description" content>
+  <meta property="og:site_name" content="Dixon&#39;s blog">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="http://yoursite.com">
+  
+    <link rel="alternate" href="/atom.xml" title="Dixon&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>Dixon's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/images/cover5.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">【笔记】ClassLoader详解</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/zhxyComing">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1198097193@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By Dixon Xu</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2019-04-27</span>
+            <span class="time">19:39:47</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/Android/">Android</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/笔记/">#笔记</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>探究 Java-ClassLoader 与 Android-ClassLoader。<br><a id="more"></a></p>
+<p>本文参考自《Android进阶揭秘》，加之修正补充和总结，为学习笔记。</p>
+<h1 id="【笔记】ClassLoader详解"><a href="#【笔记】ClassLoader详解" class="headerlink" title="【笔记】ClassLoader详解"></a>【笔记】ClassLoader详解</h1><h3 id="Java-类加载器"><a href="#Java-类加载器" class="headerlink" title="Java 类加载器"></a>Java 类加载器</h3><h4 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h4><p>系统类加载器：Bootstrap ClassLoader、Extensions ClassLoader、Application ClassLoader<br>自定义类加载器：继承自 java.lang.ClassLoader，ExtClassLoader 和 AppClassLoader 也是通过继承实现的。</p>
+<p><strong>1.Bootstrap ClassLoader</strong></p>
+<p>C/C++ 实现的加载器，用于加载指定的 JDK 核心类库。</p>
+<p><strong>2.Extensions ClassLoader</strong></p>
+<p>实现类为 ExtClassLoader，用于加载 Java 扩展类。</p>
+<p><strong>3.Application ClassLoader</strong></p>
+<p>实现类为 AppClassLoader，用于加载当前程序的 Classpath 目录、系统属性 java.class.path 指定目录。</p>
+<h4 id="继承关系"><a href="#继承关系" class="headerlink" title="继承关系"></a>继承关系</h4><p><img src="/2019/04/27/【笔记】ClassLoader详解/Java-ClassLoader.png" alt="Java-ClassLoader"></p>
+<h4 id="双亲委托模式"><a href="#双亲委托模式" class="headerlink" title="双亲委托模式"></a>双亲委托模式</h4><p><img src="/2019/04/27/【笔记】ClassLoader详解/双亲委托.png" alt="双亲委托"></p>
+<p><strong>源码</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">    <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">&#123;</span><br><span class="line">        <span class="comment">// First, check if the class has already been loaded</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name); <span class="comment">//1.</span></span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123; <span class="comment">//2.</span></span><br><span class="line">                    c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    c = findBootstrapClassOrNull(name); <span class="comment">//Android 源码中直接返回null</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">                <span class="comment">// from the non-null parent class loader</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                <span class="comment">// to find the class.</span></span><br><span class="line">                c = findClass(name); <span class="comment">//3.</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>采取双亲委托模式主要有如下两点好处：</p>
+<ol>
+<li>避免重复加载，如果已经加载过一次 Class，就不需要再次加载，而是直接读取已经加载的 Class。</li>
+<li>更加安全，如果不使用双亲委托模式，就可以自定义一个 String 类来替代系统的 String 类，这显然会造成安全隐患，采用双亲委托模式会使得系统的 String 类在 Java 虚拟机启动时就被加载，也就无法自定义 String 类来替代系统的 String 类，除非我们修改类加载器搜索类的默认算法。还有一点，只有两个类名一致并且被同一个类加载器加载的类，Java 虚拟机オ会认为它们是同一个类，想要骗过 Java 虚拟机显然不会那么容易。</li>
+</ol>
+</blockquote>
+<h4 id="示例：自定义-ClassLoader-加载-Mac-上的-Class-文件"><a href="#示例：自定义-ClassLoader-加载-Mac-上的-Class-文件" class="headerlink" title="示例：自定义 ClassLoader 加载 Mac 上的 Class 文件"></a>示例：自定义 ClassLoader 加载 Mac 上的 Class 文件</h4><p>定义类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DiskClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String path;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DiskClassLoader</span><span class="params">(String path)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.path = path;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        Class clazz = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">byte</span>[] classData = loadClassData();</span><br><span class="line">        <span class="keyword">if</span> (classData == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ClassNotFoundException();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//把byte[]转为Class</span></span><br><span class="line">            clazz = defineClass(name, classData, <span class="number">0</span>, classData.length);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] loadClassData() &#123;</span><br><span class="line">        File file = <span class="keyword">new</span> File(path);</span><br><span class="line">        InputStream is = <span class="keyword">null</span>;</span><br><span class="line">        ByteArrayOutputStream baos = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            is = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">            baos = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">int</span> length = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> ((length = is.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                baos.write(buffer, <span class="number">0</span>, length);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> baos.toByteArray();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (is != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    is.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (baos != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    baos.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">DiskClassLoader diskClassLoader = <span class="keyword">new</span> DiskClassLoader(<span class="string">"/Users/xxx/Desktop/DixonStudy.class"</span>);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    Class c = diskClassLoader.loadClass(<span class="string">"com.example.DixonStudy"</span>);</span><br><span class="line">    <span class="keyword">if</span> (c != <span class="keyword">null</span>) &#123;</span><br><span class="line">        Object obj = c.newInstance();</span><br><span class="line">        Method method = c.getDeclaredMethod(<span class="string">"say"</span>);</span><br><span class="line">        method.invoke(obj);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (ClassNotFoundException</span><br><span class="line">        | IllegalAccessException</span><br><span class="line">        | InstantiationException</span><br><span class="line">        | NoSuchMethodException</span><br><span class="line">        | InvocationTargetException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>效果</p>
+<p><img src="/2019/04/27/【笔记】ClassLoader详解/效果图.png" alt="效果图"></p>
+<p><strong>仅在 Java 可用，Android 不可用！</strong></p>
+<h3 id="Android-类加载器"><a href="#Android-类加载器" class="headerlink" title="Android 类加载器"></a>Android 类加载器</h3><p>上述 Android 不可用的原因是，DVM 或 ART 加载的不是 Class 文件而是 dex 文件。</p>
+<h4 id="类型-1"><a href="#类型-1" class="headerlink" title="类型"></a>类型</h4><p>系统类加载器：BootClassLoader、DexClassLoader、PathClassLoader<br>自定义类加载器</p>
+<p><strong>1.BootClassLoader</strong></p>
+<p>Java 实现，用于预加载常用类。ClassLoader 的内部类，并继承自 ClassLoader。访问修饰符为默认，只能同包访问，程序无法直接调用。</p>
+<p><strong>2.DexClassLoader</strong></p>
+<p>可以加载 dex 文件以及包含 dex 的压缩文件（apk 和 jar）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DexClassLoader(String dexPath, String optimizedDirectory, String librarySearchPath, ClassLoader parent)</span><br></pre></td></tr></table></figure>
+<p>dexPath：dex 路径集合，多个文件用 “:” 分割。<br>optimizedDirectory：解压 dex 文件的存储路径，该路径必须是内存存储路径，一般情况下使用私有路径：/data/data/<package name>/…。<br>librarySearchPath：包含 C/C++ 库的路径集合，多个文件分割符分割，可以为 null。<br>parent：父加载器。</package></p>
+<p>继承自 BaseDexClassLoader。</p>
+<p><strong>3.PathClassLoader</strong></p>
+<p>加载系统类和应用程序的类。继承自 BaseDexClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PathClassLoader(String dexPath, String librarySearchPath, ClassLoader parent)</span><br></pre></td></tr></table></figure>
+<p>PathClassLoader 默认 optimizedDirectory 值为 /data/dalvik-cache（安装的 apk 的 dex 文件存储于此）。</p>
+<p>PathClassLoader 通常用来加载已经安装的 apk 的 dex 文件。</p>
+<h4 id="继承关系-1"><a href="#继承关系-1" class="headerlink" title="继承关系"></a>继承关系</h4><p><img src="/2019/04/27/【笔记】ClassLoader详解/Android-ClassLoader.png" alt="Android-ClassLoader"></p>
+<ol>
+<li>ClassLoader 是一个抽象类，其中定义了 ClassLoader 的主要功能。BootClassLoader 是它的内部类。</li>
+<li>SecureClassLoader 类和 JDK8 中的 SecureClassLoader 类的代码是一样的，它继承了抽象类 ClassLoader。SecureClassLoader 并不是 ClassLoader 的实现类，而是拓展了 ClassLoader 类加入了权限方面的功能，加强了 ClassLoader 的安全性。</li>
+<li>UrlClassLoader 类和 JDK8 中的 UrlClassLoader 类的代码是一样的，它继承自 SecureClassLoader，用来通过 URL 路径从 jar 文件和文件夹中加载类和资源。</li>
+<li>InMemoryDexClassLoader 是 Android8.0 新增的类加载器，继承自 BaseDexClassLoader，用于加载内存中的 dex 文件。</li>
+<li>BaseDexClassLoader 继承自 ClassLoader，是抽象类 ClassLoader 的具体实现类，PathClassLoader、DexClassLoader 和 InMemoryDexClassLoader 都继承自它。</li>
+</ol>
+<h4 id="ClassLoader-findClass-流程"><a href="#ClassLoader-findClass-流程" class="headerlink" title="ClassLoader.findClass 流程"></a>ClassLoader.findClass 流程</h4><p>双亲没有找到此前加载过的类，就调用 ClassLoader.findClass：</p>
+<ol>
+<li>BaseDexClassLoader.findClass</li>
+<li>DexPathList.findClass</li>
+<li>Element.findClass</li>
+<li>DexFile.loadClassBinaryName</li>
+<li>DexFile.defineClass</li>
+<li>DexFile.defineClassNative(name, loader, cookie, dexFile)</li>
+</ol>
+<h4 id="BootClassLoader-创建流程"><a href="#BootClassLoader-创建流程" class="headerlink" title="BootClassLoader 创建流程"></a>BootClassLoader 创建流程</h4><p>1.ZygoteInit.preload<br>2.ZygoteInit.preloadClasses</p>
+<p><img src="/2019/04/27/【笔记】ClassLoader详解/preload.png" alt="preload"></p>
+<p>预加载到内存中，这样应用程序进程启动时也就不需要再加载，空间换时间。</p>
+<p>3.Class.forName</p>
+<p>加载上述类</p>
+<p>4.Class.classForName</p>
+<p>Native方法。其中第三个为 BootClassLoader，通过单例创建获得。</p>
+<p>所以 <strong>BootClassLoader 在 Zygote 进程的 Zygote 入口方法中创建，用于预加载类</strong>。</p>
+<h4 id="PathClassLoader-创建流程"><a href="#PathClassLoader-创建流程" class="headerlink" title="PathClassLoader 创建流程"></a>PathClassLoader 创建流程</h4><p>1.ZygoteInit.startSystemServer<br>2.ZygoteInit.handleSystemServerProcess<br>3.ZygoteInit.createPathClassLoader(String classPath, int targetSdkVersion)<br>4.ClassLoaderFactory.createClassLoader(String dexPath,String librarySearchPath, String libraryPermittedPath, ClassLoader parent,int targetSdkVersion, boolean isNamespaceShared, String classloaderName)<br>5.ClassLoaderFactory.createClassLoader(dexPath, librarySearchPath, parent, classloaderName);</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ClassLoader <span class="title">createClassLoader</span><span class="params">(String dexPath,</span></span></span><br><span class="line"><span class="function"><span class="params">        String librarySearchPath, ClassLoader parent, String classloaderName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isPathClassLoaderName(classloaderName)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PathClassLoader(dexPath, librarySearchPath, parent);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDelegateLastClassLoaderName(classloaderName)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DelegateLastClassLoader(dexPath, librarySearchPath, parent);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">"Invalid classLoaderName: "</span> + classloaderName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第4步参数为null，满足 isPathClassLoaderName 的条件判断，所以返回 PathClassLoader。</p>
+<p>这步基于 8.1、9.0 源码，略不同于书籍。</p>
+<p>可知 <strong>PathClassLoader 是在 SystemServer 进程中用工厂模式创建的。</strong></p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        </p><p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+

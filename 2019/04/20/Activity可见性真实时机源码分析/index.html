@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content>
+  <meta name="author" content="Dixon Xu">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="Activity可见性真实时机源码分析">
+  <meta property="og:description" content>
+  <meta property="og:site_name" content="Dixon&#39;s blog">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="http://yoursite.com">
+  
+    <link rel="alternate" href="/atom.xml" title="Dixon&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>Dixon's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/images/cover2.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">Activity可见性真实时机源码分析</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/zhxyComing">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1198097193@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By Dixon Xu</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2019-04-20</span>
+            <span class="time">19:39:47</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/Android/">Android</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/Android源码/">#Android源码</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>本文打算通过探索 Android 生命周期方法的源码，寻找 Activity 中 DecorView 绘制的真正时机。<br><a id="more"></a></p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最初对生命周期中 Activity <strong>“可见”</strong>的理解是：相关 View 绘制完毕，并且可以从屏幕上看到。而网上很多文章中说 onStart（onResume）时可见。</p>
+<p>最近阅读源码逻辑发现与上述结论有矛盾：<strong>Activity 的 DecorView 真正的绘制发生在 onResume 方法之后。</strong></p>
+<p>那么到底哪个是对的呢？</p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>WindowManager 通过 IPC 通信将 View 交给 WindowManagerService（WMS），WMS 继而创建 SurfaceSession 完成窗口的<strong>绘制</strong>。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>通过分别查找生命周期方法与绘制方法，将俩者触发顺序进行比较，找到<strong>可见</strong>在 Activity 生命周期里的真正时机。</p>
+<h3 id="生命周期方法的触发时机"><a href="#生命周期方法的触发时机" class="headerlink" title="生命周期方法的触发时机"></a>生命周期方法的触发时机</h3><p>这里直接分析 Android 系统通过 AMS 启动 ActivityThread 之后，ActivityThread 继而启动 Activity 的过程。以下为 8.0 源码。</p>
+<h4 id="onCreate-触发时机"><a href="#onCreate-触发时机" class="headerlink" title="onCreate 触发时机"></a>onCreate 触发时机</h4><p>ActivityThread 首先会调用 handleLaunchActivity() 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent, String reason)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        Activity a = performLaunchActivity(r, customIntent); <span class="comment">//1.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (a != <span class="keyword">null</span>) &#123;</span><br><span class="line">            ...</span><br><span class="line">            handleResumeActivity(r.token, <span class="keyword">false</span>, r.isForward,</span><br><span class="line">                    !r.activity.mFinished &amp;&amp; !r.startsNotResumed, r.lastProcessedSeq, reason); <span class="comment">//2.</span></span><br></pre></td></tr></table></figure>
+<p>handleLaunchActivity() 执行了注释1、2处的俩个关键方法。这里先分析注释1处的 performLaunchActivity：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Activity <span class="title">performLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent)</span> </span>&#123;</span><br><span class="line">...</span><br><span class="line">mInstrumentation.callActivityOnCreate(activity, r.state, r.persistentState);</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>performLaunchActivity 是 Activity 启动过程中非常重要的方法，它创建了 Context、Activtiy 等关键类，但这不是分析的重点。重点是在初始化这些关键类之后，会调用<code>mInstrumentation.callActivityOnCreate()</code>执行 Activity 的 onCreate 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">callActivityOnCreate</span><span class="params">(Activity activity, Bundle icicle,</span></span></span><br><span class="line"><span class="function"><span class="params">        PersistableBundle persistentState)</span> </span>&#123;</span><br><span class="line">    prePerformCreate(activity);</span><br><span class="line">    activity.performCreate(icicle, persistentState);</span><br><span class="line">    postPerformCreate(activity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看下 <code>activity.performCreate</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">performCreate</span><span class="params">(Bundle icicle, PersistableBundle persistentState)</span> </span>&#123;</span><br><span class="line">    mCanEnterPictureInPicture = <span class="keyword">true</span>;</span><br><span class="line">    restoreHasCurrentPermissionRequest(icicle);</span><br><span class="line">    <span class="keyword">if</span> (persistentState != <span class="keyword">null</span>) &#123;</span><br><span class="line">        onCreate(icicle, persistentState);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        onCreate(icicle);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以 onCreate 的触发时机为：</p>
+<p><strong>ActivityThread.handleLaunchActivity -&gt; ActivityThread.performLaunchActivity -&gt; Instrumentation.callActivityOnCreate -&gt; Activity.performCreate</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6103019-e4be8347d40eae0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="onCreate.png set-w320"></p>
+<h4 id="onRestart-amp-onStart-触发时机"><a href="#onRestart-amp-onStart-触发时机" class="headerlink" title="onRestart &amp; onStart 触发时机"></a>onRestart &amp; onStart 触发时机</h4><p>接着看 handleLaunchActivity 源码中的注释2 – handleResumeActivity ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">handleResumeActivity</span><span class="params">(IBinder token,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> clearHide, <span class="keyword">boolean</span> isForward, <span class="keyword">boolean</span> reallyResume, <span class="keyword">int</span> seq, String reason)</span> </span>&#123;</span><br><span class="line">    ActivityClientRecord r = mActivities.get(token);</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">//1.</span></span><br><span class="line">    r = performResumeActivity(token, clearHide, reason);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (r != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> Activity a = r.activity;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">//2.</span></span><br><span class="line">        <span class="keyword">if</span> (r.window == <span class="keyword">null</span> &amp;&amp; !a.mFinished &amp;&amp; willBeVisible) &#123;</span><br><span class="line">            r.window = r.activity.getWindow();</span><br><span class="line">            View decor = r.window.getDecorView();</span><br><span class="line">            decor.setVisibility(View.INVISIBLE);</span><br><span class="line">            ViewManager wm = a.getWindowManager();</span><br><span class="line">            WindowManager.LayoutParams l = r.window.getAttributes();</span><br><span class="line">            a.mDecor = decor;</span><br><span class="line">            l.type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;</span><br><span class="line">            l.softInputMode |= forwardBit;</span><br><span class="line">            <span class="keyword">if</span> (r.mPreserveWindow) &#123;</span><br><span class="line">                a.mWindowAdded = <span class="keyword">true</span>;</span><br><span class="line">                r.mPreserveWindow = <span class="keyword">false</span>;</span><br><span class="line">                ViewRootImpl impl = decor.getViewRootImpl();</span><br><span class="line">                <span class="keyword">if</span> (impl != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    impl.notifyChildRebuilt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (a.mVisibleFromClient) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!a.mWindowAdded) &#123;</span><br><span class="line">                    a.mWindowAdded = <span class="keyword">true</span>;</span><br><span class="line">                    <span class="comment">//3.</span></span><br><span class="line">                    wm.addView(decor, l);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    a.onWindowAttributesChanged(l);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ...</span><br></pre></td></tr></table></figure>
+<p>这里只关注注释1处，首先调用了 performResumeActivity() 方法，而 performResumeActivity() 紧接着又调用了 Activity.performResume() ：</p>
+<pre><code>final void performResume(boolean followedByPause, String reason) {
+    performRestart(true /* start */, reason); //1.
+    ...
+    mInstrumentation.callActivityOnResume(this); //2.
+    ...
+    onPostResume();
+    ...
+}
+</code></pre><p>先看 performRestart() 源码 ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">performRestart</span><span class="params">(<span class="keyword">boolean</span> start, String reason)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mToken != <span class="keyword">null</span> &amp;&amp; mParent == <span class="keyword">null</span>) &#123;</span><br><span class="line">        WindowManagerGlobal.getInstance().setStoppedState(mToken, <span class="keyword">false</span> <span class="comment">/* stopped */</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mStopped) &#123;</span><br><span class="line">        mStopped = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">synchronized</span> (mManagedCursors) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> N = mManagedCursors.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;N; i++) &#123;</span><br><span class="line">                ManagedCursor mc = mManagedCursors.get(i);</span><br><span class="line">                <span class="keyword">if</span> (mc.mReleased || mc.mUpdated) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (!mc.mCursor.requery()) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (getApplicationInfo().targetSdkVersion</span><br><span class="line">                                &gt;= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</span><br><span class="line">                                    <span class="string">"trying to requery an already closed cursor  "</span></span><br><span class="line">                                    + mc.mCursor);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    mc.mReleased = <span class="keyword">false</span>;</span><br><span class="line">                    mc.mUpdated = <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mCalled = <span class="keyword">false</span>;</span><br><span class="line">        mInstrumentation.callActivityOnRestart(<span class="keyword">this</span>); <span class="comment">//1.</span></span><br><span class="line">        writeEventLog(LOG_AM_ON_RESTART_CALLED, reason);</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> (start) &#123;</span><br><span class="line">            performStart(reason); <span class="comment">// 2.</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释1处，最终执行了 Activity.onRestart() 方法。<br>注释2处，调用 performStart ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">performStart</span><span class="params">(String reason)</span> </span>&#123;</span><br><span class="line">       mActivityTransitionState.setEnterActivityOptions(<span class="keyword">this</span>, getActivityOptions());</span><br><span class="line">       mFragments.noteStateNotSaved();</span><br><span class="line">       mCalled = <span class="keyword">false</span>;</span><br><span class="line">       mFragments.execPendingActions();</span><br><span class="line">       mInstrumentation.callActivityOnStart(<span class="keyword">this</span>); <span class="comment">//1.</span></span><br><span class="line">       ...</span><br></pre></td></tr></table></figure>
+<p>performStart() 调用了 mInstrumentation.callActivityOnStart(this)，它最终调用了 Activity.onStart()。</p>
+<p>所以 onRestart 的触发时机为：</p>
+<p><strong>ActivityThread.handleLaunchActivity -&gt; ActivityThread.handleResumeActivity -&gt; ActivityThread.performResumeActivity -&gt; Activity.performResume -&gt; Activity.performRestart -&gt; Instrumentation.callActivityOnRestart</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6103019-e57bb1254001ed8b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="onRestart.png"></p>
+<p>onStart 的触发时机为：</p>
+<p><strong>ActivityThread.handleLaunchActivity -&gt; ActivityThread.handleResumeActivity -&gt; ActivityThread.performResumeActivity -&gt; Activity.performResume -&gt; Activity.performRestart -&gt; Activity.performStart -&gt; Instrumentation.callActivityOnStart</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6103019-622926a1f2e3cf1a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="onStart.png"></p>
+<h4 id="onResume-触发时机"><a href="#onResume-触发时机" class="headerlink" title="onResume 触发时机"></a>onResume 触发时机</h4><p>回到上面的 performResume() 方法，performRestart() 执行完 onRestart()、onStart() 之后，紧接着调用了 <code>Instrumentation.callActivityOnResume(this)</code> 去执行 onResume() 方法。</p>
+<p>onResume 的触发时机为：</p>
+<p><strong>ActivityThread.handleLaunchActivity -&gt; ActivityThread.handleResumeActivity -&gt; ActivityThread.performResumeActivity -&gt; Activity.performResume -&gt; Instrumentation.callActivityOnResume</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6103019-f9fbfbb055246971.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="onResume.png"></p>
+<h3 id="绘制的触发时机"><a href="#绘制的触发时机" class="headerlink" title="绘制的触发时机"></a>绘制的触发时机</h3><p>真实绘制发生在 WMS 所在的系统进程中，所以只要找到对应应用层的 WM 是什么时候添加的 DecorView 即可。</p>
+<p>由上面的分析我们可知：</p>
+<p><code>performResumeActivity()</code> 方法分别执行了 onRestart()、onStart()、onResume<br>() 等生命周期函数。而在 <code>handleResumeActivity()</code> 源码中，我们可以看到在 <code>performResumeActivity()</code> 执行完毕后，才做了真实绘制操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">handleResumeActivity</span><span class="params">(IBinder token,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> clearHide, <span class="keyword">boolean</span> isForward, <span class="keyword">boolean</span> reallyResume, <span class="keyword">int</span> seq, String reason)</span> </span>&#123;</span><br><span class="line">    ActivityClientRecord r = mActivities.get(token);</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">//1.</span></span><br><span class="line">    r = performResumeActivity(token, clearHide, reason);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (r != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> Activity a = r.activity;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">//2.</span></span><br><span class="line">        <span class="keyword">if</span> (r.window == <span class="keyword">null</span> &amp;&amp; !a.mFinished &amp;&amp; willBeVisible) &#123;</span><br><span class="line">            r.window = r.activity.getWindow();</span><br><span class="line">            View decor = r.window.getDecorView();</span><br><span class="line">            decor.setVisibility(View.INVISIBLE);</span><br><span class="line">            ViewManager wm = a.getWindowManager();</span><br><span class="line">            WindowManager.LayoutParams l = r.window.getAttributes();</span><br><span class="line">            a.mDecor = decor;</span><br><span class="line">            l.type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;</span><br><span class="line">            l.softInputMode |= forwardBit;</span><br><span class="line">            <span class="keyword">if</span> (r.mPreserveWindow) &#123;</span><br><span class="line">                a.mWindowAdded = <span class="keyword">true</span>;</span><br><span class="line">                r.mPreserveWindow = <span class="keyword">false</span>;</span><br><span class="line">                ViewRootImpl impl = decor.getViewRootImpl();</span><br><span class="line">                <span class="keyword">if</span> (impl != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    impl.notifyChildRebuilt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (a.mVisibleFromClient) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!a.mWindowAdded) &#123;</span><br><span class="line">                    a.mWindowAdded = <span class="keyword">true</span>;</span><br><span class="line">                    <span class="comment">//3.</span></span><br><span class="line">                    wm.addView(decor, l);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    a.onWindowAttributesChanged(l);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ...</span><br></pre></td></tr></table></figure>
+<p>上述注释2、3，将 DecorView 交给了 WMS 去绘制，而通过前面分析可知，这个操作发生在 onResume 方法之后。</p>
+<h2 id="执行顺序图"><a href="#执行顺序图" class="headerlink" title="执行顺序图"></a>执行顺序图</h2><p><img src="https://upload-images.jianshu.io/upload_images/6103019-bf10cbbe100fb67d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="顺序图.png"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>首先，<code>handleResumeActivity()</code> 不同于字面意思，它共计执行了  onRestart()、onStart()、onResume() 三个生命周期函数。</p>
+<p>其次，<code>wm.addView(decor, l)</code> 发生在 <code>handleResumeActivity()</code> 之后，说明 View 的真正绘制发生在 onResume() 之后。而 onCreate() 中调用 setContentView() 只是创建 DecorView 并添加子视图，并没有真正开始绘制。</p>
+<p>最后，有一些关键知识点需要了解，后续会专程研究，这里可以如下简单理解：</p>
+<p>一个 View 从数据渲染为屏幕可见的视图，不是光靠应用层就能完成的。应用层只负责数据的处理，真正的渲染发生在系统层，俩者通过 Android 匿名共享内存进行通信。</p>
+<p>应用层通过 ViewRootImpl（Surface），与系统层的 SurfaceFlinger 进行交互。其中 ViewRootImpl 可以简单理解为 View 在应用层数据的处理者，而 SurfaceFlinger 可以理解为 View 在系统层渲染的处理者。</p>
+<p>WindowManager.addView 之后，相应窗口的 ViewRootImpl、以及对应系统层的 SurfaceSession 才会创建。后续添加、更新 View，都是通过 ViewRootImpl 触发 View 的三大方法，计算 View 数据，然后交给系统层 SurfaceFlinger 去绘制的。</p>
+<p>所以上述 <code>wm.addView(decor, l)</code> 发生在 <code>handleResumeActivity()</code> 之后，可以得出 View 绘制发生在 onResume() 之后，就是基于此。</p>
+<p>那么为什么网上很多文章都说 onStart（onResume）可见呢？上面说，应用层负责数据、系统层负责渲染。所以我的理解是：应用层对于 View 的可见性理解，是基于数据的，只要数据设置完毕，后续系统层级的绘制工作无需关心。而我这里的可见，是视觉意义上真正的绘制完毕，故不能抛开系统层的渲染，所以 Activity 中 DecorView 的可见发生在 onResume() 方法之后。</p>
+<p>以上为个人理解，有异议欢迎留言。</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        </p><p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+
