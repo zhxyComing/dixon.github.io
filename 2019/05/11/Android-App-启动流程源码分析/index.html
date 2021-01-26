@@ -100,7 +100,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2019-05-11</span>
-            <span class="time">19:41:07</span>
+            <span class="time">20:13:50</span>
           </span>
           
           <!--  Categories  -->
@@ -124,7 +124,7 @@
         <div class="post-content">
           <p>从源码分析总结应用层开发人员需要知道的从 Launcher 到 App 的启动流程！<br><a id="more"></a></p>
 <p>App 启动是多个进程复杂交互的过程，本文主要分析从 Launcher 到 App 启动过程中，应用层开发人员需要知道的大致流程。</p>
-<h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><p><img src="https://upload-images.jianshu.io/upload_images/6103019-b744aa630064c5f3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="流程概览.png"></p>
+<h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><p><img src="/2019/05/11/Android-App-启动流程源码分析/Android-App-启动流程源码分析/流程概览.png" alt="流程概览.png"></p>
 <h4 id="名词说明"><a href="#名词说明" class="headerlink" title="名词说明"></a>名词说明</h4><p>Launcher：桌面应用进程；<br>AMS：ActivityManagerService，位于系统 system_server 进程中；<br>App：要启动的 App 进程。</p>
 <h4 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h4><p>流程上大体可分为四步：</p>
 <ol>
