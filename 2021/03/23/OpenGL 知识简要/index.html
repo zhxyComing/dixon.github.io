@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content>
+  <meta name="author" content="Dixon Xu">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="OpenGL 知识简要">
+  <meta property="og:description" content>
+  <meta property="og:site_name" content="Dixon&#39;s blog">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="http://yoursite.com">
+  
+    <link rel="alternate" href="/atom.xml" title="Dixon&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>Dixon's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/images/cover1.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">OpenGL 知识简要</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/zhxyComing">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1198097193@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By Dixon Xu</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2021-03-23</span>
+            <span class="time">16:12:35</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/OpenGL/">OpenGL</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/OpenGL/">#OpenGL</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <h2 id="1-入门篇"><a href="#1-入门篇" class="headerlink" title="1. 入门篇"></a>1. 入门篇</h2><p><strong>1. GLFW</strong></p>
+<p>GLFW 是一个库，提供给我们一个窗口和上下文用来渲染，省去了自己处理在不同平台上窗口的创建、定义上下文、处理用户输入的过程。</p>
+<p><strong>2. GLAD</strong></p>
+<p>因为 OpenGL 只是个规范，具体的函数由开发商实现，由于函数位置无法在编译时确定下来，需要在运行时查询，因此，开发者需要在运行时获取函数地址并将其保存在一个函数指针中供以后使用。这个过程很复杂且繁琐，因此 GLAD 就是函数指针的加载库，用于简化该流程。同时它也是 GLEW 的升级版。</p>
+<p><strong>3. 管线</strong></p>
+<p>OpenGL 的大部分工作都是关于把 3D 坐标转变为适应你屏幕的 2D 像素，这个处理过程是由”图形渲染管线”管理的。实际上管线指的是一堆原始图形数据途经一个输送管道，期间经过各种变化处理最终出现在屏幕的过程。</p>
+<p>管线可被划分为两个部分：第一部分把你的 3D 坐标转换为 2D 坐标，第二部分是把 2D 坐标转变为实际的有颜色的像素。</p>
+<p><strong>4. 着色器</strong></p>
+<p>图形渲染管线可以被划分为几个阶段，每个阶段将会把前一个阶段的输出作为输入。所有这些阶段都是高度专门化的（它们都有一个特定的函数），并且很容易并行执行。正是由于它们具有并行执行的特性，当今大多数显卡都有成千上万的小处理核心，它们在 GPU 上为每一个渲染管线阶段运行各自的小程序，从而在图形渲染管线中快速处理你的数据。这些小程序叫做着色器(Shader)。</p>
+<p>着色器运行在 GPU 上，是用 OpenGL 着色器语言(OpenGL Shading Language, GLSL)写成的。</p>
+<p><strong>5. 图形渲染管线的几个阶段</strong></p>
+<ol>
+<li>第一阶段.[顶点着色器]。把 3D 坐标转为另一种 3D 坐标。</li>
+<li>第二阶段.图元装配。所有的点装配成指定图元的形状。</li>
+<li>第三阶段.[几何着色器]。可以通过产生新顶点构造出新的（或是其它的）图元来生成其他形状。</li>
+<li>第四阶段.光栅化。把图元映射为最终屏幕上相应的像素，生成供片段着色器(Fragment Shader)使用的片段(Fragment，OpenGL 中的一个片段是 OpenGL 渲染一个像素所需的所有数据)。在下一阶段（片段着色器）运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。</li>
+<li>第五阶段.[片段着色器]。计算一个像素的最终颜色，这也是所有 OpenGL 高级效果产生的地方。通常，片段着色器包含 3D 场景的数据（比如光照、阴影、光的颜色等等），这些数据可以被用来计算最终像素的颜色。</li>
+<li>第六阶段.Alpha 测试和混合。即处理深度（根据深度决定是否显示）和混合（半透明）。</li>
+</ol>
+<p>在现代 OpenGL 中，我们必须定义至少一个顶点着色器和一个片段着色器，即使是一个简单的图形。（因为 GPU 中没有默认的顶点/片段着色器）。</p>
+<p><strong>6. 位置输入</strong></p>
+<p>OpenGL 中顶点输入包括位置坐标数组、法线向量数组、纹理坐标数组等等，这里讨论位置坐标数组的输入。</p>
+<p>OpenGL 仅当 3D 位置坐标在 3 个轴（x、y 和 z）上都为 -1.0 到 1.0 的范围内时才处理它。这个坐标系称之为标准化设备坐标（NDC），中心点为 000，其中 x 正箭头向右，y 正箭头向上。也就是说顶点着色器的输出（而不是输入，因此我们需要在顶点着色器内将坐标转化为标准化设备坐标）需要在标准化设备坐标内。</p>
+<p>标准化设备坐标接着会变换为[屏幕空间坐标]，这是使用你通过 glViewport 函数提供的数据，进行[视口变换]完成的。所得的屏幕空间坐标又会被变换为片段输入到片段着色器中。</p>
+<p><strong>7. 顶点缓冲对象 VBO</strong></p>
+<p>作用：它会在 GPU 内存(通常被称为显存)中储存大量顶点。使用这些缓冲对象的好处是我们可以一次性的发送一大批数据到显卡上，而不是每个顶点发送一次。从 CPU 把数据发送到显卡相对较慢，所以只要可能我们都要尝试尽量一次性发送尽可能多的数据。当数据发送至显卡的内存中后，顶点着色器几乎能立即访问顶点，这是个非常快的过程。</p>
+<p>使用：详见函数简要</p>
+<p><strong>8. 顶点数组对象 VAO</strong></p>
+<p>作用：<code>glVertexAttribPointer</code> 指明了如何将顶点数据链接到顶点着色器的属性上（即数据和属性如何建立关联），当属性、物体非常多，将数据和属性绑定就会非常复杂。VAO 则负责存储整个的链接过程，方便不同顶点数据和属性配置之间切换、复用。</p>
+<p><strong>9. EBO</strong></p>
+<p>一个存储索引供索引化绘制使用的缓冲对象。通过提供绘制顺序，减少重复的顶点数。</p>
+<p><strong>10. GLSL</strong></p>
+<p>OpenGL 着色器是用 OpenGL 着色器语言(OpenGL Shading Language, GLSL)写成的。</p>
+<p>着色器的后缀名可以是任意自定义格式，本质上是供动态编译的字符串。由于我使用了 GLSL Support 插件，所以后缀名为 glsl。</p>
+<p>着色器有以下注意点：</p>
+<p>1.顶点着色器的每个输入变量称之为顶点属性。默认上限 16 个。</p>
+<p>2.着色器的数据类型有但不限于：基础数据类型（int、float、double、uint、bool），容器类型（向量（vector），矩阵（matrix））</p>
+<p>3.下面 n 代表分量，可以有 1～4 个，可以分别使用 .x、.y、.z 和 .w 获取分量。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">vecn</td>
+<td style="text-align:left">float 分量的向量</td>
+</tr>
+<tr>
+<td style="text-align:left">bvecn</td>
+<td style="text-align:left">bool 分量的向量</td>
+</tr>
+<tr>
+<td style="text-align:left">ivecn</td>
+<td style="text-align:left">int 分量的向量</td>
+</tr>
+<tr>
+<td style="text-align:left">uvecn</td>
+<td style="text-align:left">unsigned int 分量的向量</td>
+</tr>
+<tr>
+<td style="text-align:left">dvecn</td>
+<td style="text-align:left">double 分量的向量</td>
+</tr>
+</tbody>
+</table>
+<p>4.向量重组运算，允许下面的语法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vec2 someVec;</span><br><span class="line">vec4 differentVec = someVec.xyxx;</span><br><span class="line">vec3 anotherVec = differentVec.zyw;</span><br><span class="line">vec4 otherVec = someVec.xxxx + anotherVec.yxzy;</span><br><span class="line">vec2 vect = vec2(<span class="number">0.5f</span>, <span class="number">0.7f</span>);</span><br><span class="line">vec4 result = vec4(vect, <span class="number">0.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">vec4 otherResult = vec4(result.xyz, <span class="number">1.0f</span>);</span><br></pre></td></tr></table></figure>
+<p>5.因为顶点着色器的输入特殊在，它从顶点数据中直接接收输入，所以需要一个额外的 layout 标识，才能链接到顶点数据。即建立顶点数据和属性链接的识别 id，使用 <code>glVertexAttribPointer</code> 链接时，第一个参数就是该 id。</p>
+<p><strong>11. Uniform</strong></p>
+<p>一个特殊类型的 GLSL 变量。</p>
+<p>作用：是一种从 CPU 中的应用直接向 GPU 中的着色器发送数据的方式（不需要像顶点数据一样进行链接），对于设置一个在渲染迭代中会改变的属性是一个非常有用的工具。</p>
+<p>特性：</p>
+<ol>
+<li>uniform 是全局的，即必须在每个着色器程序对象中都是独一无二的，且可以被着色器程序的任意着色器在任意阶段访问。</li>
+<li>无论你把 uniform 值设置成什么，uniform 会一直保存它们的数据，直到它们被重置或更新。</li>
+</ol>
+<p><strong>12. 纹理</strong></p>
+<p>作用：如果想让图形看起来更真实，我们就必须有足够多的顶点，从而指定足够多的颜色。这将会产生很多额外开销。所以我们可以给图形贴一张图片，在这张图片上插入非常多的细节，这样就可以让物体非常精细而不用指定额外的顶点。</p>
+<p>1.纹理坐标：</p>
+<p>纹理坐标原点为左下角，范围从 0～1；相对的位置坐标原点为视窗中心，范围从 -1～1；</p>
+<p>2.采样：</p>
+<p>使用纹理坐标获取纹理颜色的过程叫做采样(Sampling，采集片段颜色)。对应的，采样器(Sampler)可供片段着色器访问纹理对象（Texture），可以理解成一种数据类型，需要使用 uniform 传递。</p>
+<p>3.环绕方式</p>
+<p>纹理坐标的范围通常是从(0, 0)到(1, 1)，如果我们把纹理坐标设置在范围之外则需要考虑环绕效果。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">环绕方式(Wrapping)</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">GL_REPEAT</td>
+<td style="text-align:left">默认行为。重复纹理图像。</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_MIRRORED_REPEAT</td>
+<td style="text-align:left">和 GL_REPEAT 一样，但每次重复图片是镜像放置的。</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_CLAMP_TO_EDGE</td>
+<td style="text-align:left">纹理坐标会被约束在 0 到 1 之间，超出的部分会重复纹理坐标的边缘，产生一种边缘被拉伸的效果。</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_CLAMP_TO_BORDER</td>
+<td style="text-align:left">超出的坐标为用户指定的边缘颜色。</td>
+</tr>
+</tbody>
+</table>
+<p>通过 <code>glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);</code> 设置环绕。其中第二个参数 S、T、R 分别对应 X、Y、Z 轴。</p>
+<p>4.纹理过滤</p>
+<p>纹理像素(Texture Pixel)：打开一张 .jpg 格式图片，不断放大你会发现它是由无数像素点组成的，这个点就是纹理像素。OpenGL 以这个[顶点的纹理坐标数据]去查找纹理图像上的像素，然后进行采样提取纹理像素的颜色。</p>
+<p>纹理过滤：怎样根据纹理坐标从纹理像素提取颜色。有如下几种过滤方式：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">过滤方式</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">GL_NEAREST</td>
+<td style="text-align:left">临近过滤，OpenGL 会选择中心点最接近纹理坐标的那个像素。（如像素风）</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_LINEAR</td>
+<td style="text-align:left">线性过滤，基于纹理坐标附近的纹理像素的混合色，纹理像素离纹理坐标越近，占比越大。（更平滑，更真实）</td>
+</tr>
+</tbody>
+</table>
+<p>指定放大或缩小时的纹理过滤方式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);</span><br><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br></pre></td></tr></table></figure>
+<p>5.多级渐远纹理</p>
+<p>作用：远处的物体只有很少的片段，从高分辨率纹理中为这些片段获取正确的颜色很困难，会导致小物体不真实，同时浪费内存。</p>
+<p>原理：定义一系列的纹理图像，后一个纹理图像是前一个的二分之一。距观察者的距离超过一定的阈值，OpenGL 会使用不同的多级渐远纹理。</p>
+<p>使用：使用 <code>glGenerateMipmaps</code> 创建多级渐远纹理。</p>
+<p>其他：多级渐远纹理之间也可以使用纹理过滤来减少边界感：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);</span><br><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); <span class="comment">// 不能设置多级渐远纹理，因为使用多级渐远纹理是在被缩小时用的，设置会产生 GL_INVALID_ENUM 错误</span></span><br></pre></td></tr></table></figure>
+<p>它的参数有：<code>GL_NEAREST_MIPMAP_NEAREST</code>、<code>GL_LINEAR_MIPMAP_NEAREST</code>、<code>GL_NEAREST_MIPMAP_LINEAR</code>、<code>GL_LINEAR_MIPMAP_LINEAR</code>。</p>
+<p><strong>13. SOIL</strong></p>
+<p>OpenGL 图像库。详见 OpenGL 相关配置。</p>
+<p><strong>14. GLM</strong></p>
+<p>专门为 OpenGL 量身定制的数学库。详见 OpenGL 相关配置。</p>
+<p><strong>15. 纹理单元</strong></p>
+<p>一个纹理的位置值通常称为一个纹理单元，目的是让我们在着色器中可以使用多于一个的纹理。通过把纹理单元赋值给采样器，我们可以一次绑定多个纹理，只要我们首先激活对应的纹理单元。</p>
+<p><strong>16. 纹理颠倒</strong></p>
+<p>OpenGL 的纹理坐标 y 的原点在底部，而图片默认在顶部，因此需要在着色器中将 y 颠倒过来：<code>TexCoord = vec2(texCoord.x, 1.0f - texCoord.y);</code>。</p>
+<h2 id="2-数学篇"><a href="#2-数学篇" class="headerlink" title="2. 数学篇"></a>2. 数学篇</h2><p>markdown 数学公式语法说明 [^footnote1]</p>
+<h3 id="2-1-向量"><a href="#2-1-向量" class="headerlink" title="2.1 向量"></a>2.1 向量</h3><p><strong>1.用途</strong></p>
+<p>用来表示方向（不同的起始点也认为是相同的向量）</p>
+<p><strong>2.基础概念</strong></p>
+<p>向量表示 [^footnote2]：</p>
+<p>$\vec{v}=\begin{bmatrix} x \ y \ z \end{bmatrix}$</p>
+<p>位置向量：起始点为 (0,0) 的向量。比如说位置向量 (3, 5) 在图像中的起点会是 (0, 0)，并会指向 (3, 5)。</p>
+<p>标量：只有大小，没有方向的向量。</p>
+<p><strong>3.向量计算</strong></p>
+<p><1>.与标量运算</1></p>
+<p>$$\begin{bmatrix} x \ y \ z \end{bmatrix} + k =\begin{bmatrix} x + k \ y + k \ z + k \end{bmatrix}$$</p>
+<p>即每个分量参与运算，其实 + 可以替换为减乘除（-/·/÷）。</p>
+<p><2>.向量取反</2></p>
+<p>将其方向逆转，即每个分量前加负号。</p>
+<p><3>.向量加减法</3></p>
+<p>即每个分量分别相加/减。</p>
+<p>加法示意图：</p>
+<p>a + b，a、b 起始点均为 0，则结果为平行四边形对角线，起点为 0。</p>
+<p>a + b，b 的起始点为 a，则结果为 a 的起点指向 b 的终点的向量。</p>
+<p>其实就结果而言是相同的，因为无论 b 的起始点在哪，都是同一个向量。</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/向量加法.jpg" alt="向量加法"></p>
+<p>减法示意图：</p>
+<p>a - b，a、b 起始点均为 0，则结果为平行四边形的反对角线，起点为 b，终点为 a。</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/向量减法.jpg" alt="向量减法"></p>
+<p><4>.向量标准化</4></p>
+<p>即求单位向量。</p>
+<p>$n̂ =\vec{v}\div|\vec{v}|$</p>
+<p>单位向量：长度为 1 的向量。单位向量头上有 \^ 作为记号。</p>
+<p><5>.向量乘法</5></p>
+<p>有俩种：点乘，记作 $\vec{v}⋅\vec{k}$；叉乘，记作 $\vec{v}×\vec{k}$。</p>
+<p>点乘：俩个向量的数乘结果乘以俩个向量夹角的余弦值。</p>
+<p>$$\vec{v}⋅\vec{k}=|\vec{v}|⋅|\vec{k}|⋅cosθ$$</p>
+<p>而 $\vec{v}⋅\vec{k}$ 的计算方式如下：</p>
+<p>$$\vec{v}⋅\vec{k}=(v.x <em> k.x) + (v.y </em> k.y) + (v.z * k.z)$$</p>
+<p>即满足如下关系：</p>
+<p>$$(v.x <em> k.x) + (v.y </em> k.y) + (v.z * k.z) = |\vec{v}|⋅|\vec{k}|⋅cosθ$$</p>
+<p>点乘计算一般用于求夹角，计算光照非常有用。</p>
+<p>向量：</p>
+<p>$cosθ=(\vec{v}⋅\vec{k}) \div (|\vec{v}|⋅|\vec{k}|)$</p>
+<p>单位向量：</p>
+<p>$cosθ=\vec{v}⋅\vec{k}$</p>
+<p>eg：</p>
+<p>$$\begin{bmatrix} 0.6 \ -0.8 \ 0 \end{bmatrix} . \begin{bmatrix} 0 \ 1 \ 0 \end{bmatrix} = (0.6 <em> 0) + (-0.8 </em> 1) + (0 * 0) = -0.8$$</p>
+<p>反余弦可得 143 度。</p>
+<blockquote>
+<p>arccos1 = 0; arccos0 = 90</p>
+</blockquote>
+<p>叉乘：</p>
+<p>叉乘一般用来求正交向量，即得到一个正交于两个输入向量的第三个向量。</p>
+<p>如图：</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/正交向量.jpg" alt="正交向量"></p>
+<p>计算公式：</p>
+<p>$$\begin{bmatrix} Ax \ Ay \ Az \end{bmatrix} × \begin{bmatrix} Bx \ By \ Bz \end{bmatrix} = \begin{bmatrix} Ay <em> Bz - Az </em> By \ Az <em> Bx - Ax </em> Bz \ Ax <em> By - Ay </em> Bx\end{bmatrix}$$</p>
+<h3 id="2-2-矩阵"><a href="#2-2-矩阵" class="headerlink" title="2.2 矩阵"></a>2.2 矩阵</h3><p>行 x 列</p>
+<p>eg：</p>
+<p>$$\begin{bmatrix} 1 \quad 2 \quad 3 \ 4 \quad 5 \quad 6 \end{bmatrix}$$</p>
+<p>对于 2 x 3 的矩阵，获取 4 的索引为 (2,1)，而图像索引则是先算列，再算行，因此是 (1,2)。</p>
+<p>矩阵加减：</p>
+<p>与标量相加，矩阵的元素分别与标量相加。<br>与矩阵相加，矩阵的对应元素分别相加。</p>
+<p>矩阵乘法：</p>
+<p>与标量相乘，矩阵的元素分别与标量相乘（相当于放大元素）。<br>与矩阵相乘，遵循如下算法：</p>
+<ol>
+<li>左矩阵列数 与 右矩阵行数 相同，才能相乘</li>
+<li>A*B ≠ B*A</li>
+<li>结果矩阵是 (n, m)，n 等于左侧矩阵行数，m 等于右侧矩阵列数</li>
+</ol>
+<p>$$\begin{bmatrix}<br>    1 &amp; 0 &amp; 2 \<br>    -1 &amp; 3 &amp; 1 \<br>  \end{bmatrix}<br>  \times<br>  \begin{bmatrix}<br>    3 &amp; 1 \<br>    2 &amp; 1 \<br>    1 &amp; 0<br>  \end{bmatrix}<br>  =<br>  \begin{bmatrix}<br>    (1 \times 3  +  0 \times 2  +  2 \times 1) &amp; (1 \times 1   +   0 \times 1   +   2 \times 0) \<br>    (-1 \times 3  +  3 \times 2  +  1 \times 1) &amp; (-1 \times 1   +   3 \times 1   +   1 \times 0) \<br>  \end{bmatrix}<br>  =<br>  \begin{bmatrix}<br>    5 &amp; 1 \<br>    4 &amp; 2 \<br>  \end{bmatrix}$$</p>
+<p>单位矩阵：</p>
+<p>从左上角到右下角的对角线（称为主对角线）上的元素均为 1、除此之外均为 0 的矩阵。</p>
+<h3 id="2-3-矩阵和向量的混算"><a href="#2-3-矩阵和向量的混算" class="headerlink" title="2.3 矩阵和向量的混算"></a>2.3 矩阵和向量的混算</h3><p>向量可以理解成 (N×1) 的矩阵，其中 N 为分量个数。一般为 4 分量，即 vec4，eg：</p>
+<p>$$\begin{bmatrix} x \ y \ z \ 1\end{bmatrix}$$</p>
+<p>基于这个特性，可以使用矩阵 (M×N) 与向量 (N×1) 相乘，结果为 (M×1)。</p>
+<p>用途：矩阵乘以我们的向量将变换 (Transform) 这个向量，多用于 2D/3D 变换。</p>
+<p><strong>1.向量缩放</strong></p>
+<p>定义：对长度进行缩放，而不改变方向。</p>
+<p>如果把缩放向量表示为 (S1,S2,S3)，则缩放矩阵为：</p>
+<p>$$\begin{bmatrix} S1 \quad 0 \quad 0 \quad 0 \ 0 \quad S2 \quad 0 \quad 0 \ 0 \quad 0 \quad S3 \quad 0 \ 0 \quad 0 \quad 0 \quad 1 \end{bmatrix}$$</p>
+<p>结果为：</p>
+<p>$$\begin{bmatrix} x<em>S1 \ y</em>S2 \ z*S3 \ 1 \end{bmatrix}$$</p>
+<p><strong>2.向量位移</strong></p>
+<p>定义：在原始向量的基础上加上另一个向量从而获得一个在不同位置的新向量的过程。</p>
+<p>如果把位移向量表示为 ((Tx,Ty,Tz)，则位移矩阵为：</p>
+<p>$$\begin{bmatrix} 1 \quad 0 \quad 0 \quad Tx \ 0 \quad 1 \quad 0 \quad Ty \ 0 \quad 0 \quad 1 \quad Tz \ 0 \quad 0 \quad 0 \quad 1 \end{bmatrix}$$</p>
+<p>结果为：</p>
+<p>$$\begin{bmatrix} x + Tx \ y + Ty \ z + Tz \ 1 \end{bmatrix}$$</p>
+<p>可知：</p>
+<p>当 w 分量，也就是齐次坐标为 0 时，向量不能位移。</p>
+<p><strong>3.向量旋转</strong></p>
+<p>前置知识：</p>
+<p>弧度转角度：角度 = 弧度 <em> (180.0f / PI)<br>角度转弧度：弧度 = 角度 </em> (PI / 180.0f)<br>PI 约等于 3.14..</p>
+<p>旋转矩阵与旋转结果：</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/旋转矩阵.png" alt="旋转矩阵"></p>
+<p>利用上述旋转矩阵组合的方式容易导致万向节死锁，一个更好的解决方案是沿着任意轴旋转，而不是组合（根本解决方案是使用四元数）。</p>
+<p>延任意轴旋转的公式：</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/任意轴旋转.png" alt="任意轴旋转"></p>
+<p><strong>4.矩阵组合</strong></p>
+<p>用途：将多种变换组合到一个矩阵中。</p>
+<p>注意点：先写位移矩阵再乘缩放矩阵，矩阵不支持交换律，否则位移会被部分抵消。</p>
+<p>当矩阵相乘时，在最右边的矩阵是第一个与向量相乘的，所以读时则是从右往左读。因此实际操作时最好先缩放、再旋转、最后位移。</p>
+<h3 id="2-4-Q-amp-A"><a href="#2-4-Q-amp-A" class="headerlink" title="2.4 Q&amp;A"></a>2.4 Q&amp;A</h3><p>Q：矩阵在图形领域为什么重要？</p>
+<p>A：利用矩阵可以定义一个无限数量的变换，把它们组合为仅仅一个矩阵，如果愿意的话我们还可以重复使用它。在着色器中使用矩阵可以省去重新定义顶点数据的功夫，它也能够节省处理时间，因为我们没有一直重新发送我们的数据（这是个非常慢的过程）。</p>
+<h2 id="3-入门篇续"><a href="#3-入门篇续" class="headerlink" title="3. 入门篇续"></a>3. 入门篇续</h2><p><strong>1. 坐标系统</strong></p>
+<p>作用：顶点着色器的任务就是把我们自己的坐标转换为标准化设备坐标（NDC，即坐标在 -1～1 之间），标准化坐标会传入光栅器，再转为屏幕上的二维坐标或像素。但是在转为屏幕空间坐标之前需要先转到几个过渡坐标系，原因是在特定的坐标系进行运算才有意义也更方便。更直白点，通过这几个坐标系统，可以将原视图转到各种视角，譬如摄像机视角、透视视角。</p>
+<p>这些坐标系及顺序为：</p>
+<p>局部空间（Local Space，或者称为物体空间（Object Space））<br><br>世界空间（World Space）<br><br>观察空间（View Space，或者称为视觉空间（Eye Space））<br><br>裁剪空间（Clip Space）<br><br>屏幕空间（Screen Space）</p>
+<p>结合矩阵，顺序为：</p>
+<p>局部空间 →(model matrix 模型矩阵)→ 世界空间 →(view matrix 视图矩阵)→ 观察空间 →(project matrix 投影矩阵)→ 裁剪空间 →(viewport transform 视口变换)→ 屏幕空间</p>
+<p><strong>2. 透视</strong></p>
+<p>物体近大远小的现象称之为透视。</p>
+<p><strong>3. 裁剪空间</strong></p>
+<p>OpenGL 期望所有的坐标都能落在一个给定的范围内，且任何在这个范围之外的点都应该被裁剪掉。被裁剪掉的坐标就被忽略了，所以剩下的坐标就将变为屏幕上可见的片段。</p>
+<p>投影即在这一步完成，它会将可见范围内的坐标裁剪出来，其他部分则忽略，所以称之为裁剪空间。</p>
+<p><strong>4. 投影</strong></p>
+<p>将一定 3D 范围内的坐标转化到标准化设备坐标系的过程被称之为投影。</p>
+<p><strong>5. 投影矩阵</strong></p>
+<p>投影矩阵指定了裁剪的范围，它会把指定范围内的坐标转化到标准化设备坐标。</p>
+<p>投影矩阵有俩种：正射投影矩阵和透视投影矩阵。</p>
+<p>正射投影矩阵就是没有透视效果的投影矩阵，多用于二维渲染以及一些建筑或工程的应用。创建：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参数：左、右、下、上、前、后</span></span><br><span class="line">glm::ortho(<span class="number">0.0f</span>, <span class="number">800.0f</span>, <span class="number">0.0f</span>, <span class="number">600.0f</span>, <span class="number">0.1f</span>, <span class="number">100.0f</span>);</span><br></pre></td></tr></table></figure>
+<p>透视投影矩阵不仅将给定的平截头体范围映射到裁剪空间，同样还修改了每个顶点坐标的 w 值，从而使得离观察者越远的顶点坐标 w 分量越大。被转换到裁剪空间的坐标都会在 -w 到 w 的范围之间。而在透视划分阶段，w 分量被用来透视投影（展现出透视效果，即 x/w、y/w、z/w）。创建：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参数：视野、宽高比、近平面、远平面</span></span><br><span class="line">glm::mat4 proj = glm::perspective(<span class="number">45.0f</span>, (<span class="keyword">float</span>)width/(<span class="keyword">float</span>)height, <span class="number">0.1f</span>, <span class="number">100.0f</span>);</span><br></pre></td></tr></table></figure>
+<p><strong>6. 平截头体</strong></p>
+<p>投影矩阵创建的观察区域。</p>
+<p><strong>7. 透视划分</strong></p>
+<p>在顶点着色器运行之后，会执行透视划分。</p>
+<p>透视划分才将坐标转化为标准化设备坐标，投影只是将一定范围内的坐标转化到标准化设备坐标系。俩者的区别在于，投影完的坐标有 xyzw 四分量，而标准化设备坐标有 xyz 三分量。如果没有透视，那么投影完的 xyz 等于标准化设备坐标 xyz。</p>
+<p>透视划分之后，<code>glViewPort</code> 会将标准化设备坐标映射到屏幕坐标，屏幕坐标的每个坐标都关联了一个屏幕上的点。</p>
+<p><strong>8. 裁剪坐标转换</strong></p>
+<p>Vec_clip = Mat_projection ⋅ Mat_view ⋅ Mat_model ⋅ Vec_local</p>
+<p><strong>9. 摄像机</strong></p>
+<p>即观察空间。</p>
+<p>观察空间有四个重要的参数：</p>
+<p>1.位置。即世界空间中代表摄像机位置的向量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glm::vec3 cameraPos = glm::vec3(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">3.0f</span>);</span><br></pre></td></tr></table></figure>
+<p>2.方向。位置向量-目标向量。方向向量并不是最好的名字，实际上它指向从它到目标向量的相反方向（因为我们最终希望把世界平移到与我们自身移动的相反方向）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glm::vec3 cameraTarget = glm::vec3(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);</span><br></pre></td></tr></table></figure>
+<p>3.右轴。右向量，代表摄像机的 x 轴正方向（红 x 绿 y 蓝 z）。技巧是：定义一个世界空间的上向量（0.0f, 1.0f, 0.0f），上向量与方向向量叉乘（俩个向量叉乘的结果就是同时垂直于两向量的向量），就得到 x 轴正方向的向量（交换顺序得到 x 轴反方向的向量）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glm::vec3 up = glm::vec3(<span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>); </span><br><span class="line">glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));</span><br></pre></td></tr></table></figure>
+<p>4.上轴。代表摄像机的 y 轴正方向，使用方向向量（z）和右向量（x）叉乘。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);</span><br></pre></td></tr></table></figure>
+<p>利用观察空间的这四个参数，创建特殊的矩阵，可以实现空间变化，这个矩阵成为 LookAt 矩阵。即通过 LookAt 矩阵乘以任何向量即可把该向量变换到那个坐标空间。</p>
+<p>LookAt 矩阵和这四个参数的对应关系如下：</p>
+<p><img src="/2021/03/23/OpenGL 知识简要/LookAt.png" alt="LookAt"></p>
+<p>GLM 提供了函数来简化此过程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">glm::mat4 view;</span><br><span class="line">view = glm::lookAt(glm::vec3(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">3.0f</span>), </span><br><span class="line">           glm::vec3(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>), </span><br><span class="line">           glm::vec3(<span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>));</span><br></pre></td></tr></table></figure>
+<p>参数分别是：摄像机位置，目标位置，表示世界空间中上向量的向量。</p>
+<p><strong>10. 欧拉角</strong></p>
+<p>利用观察空间将物体由世界坐标转为观察坐标。而欧拉角则用于实现视角的移动。</p>
+<p>有三种欧拉角：俯仰角(Pitch)、偏航角(Yaw)和滚转角(Roll)。可以把俯仰角和偏航角转化为用来自由旋转的摄像机的 3 个维度的方向向量，公式如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">direction.x = <span class="built_in">cos</span>(glm::radians(pitch)) * <span class="built_in">cos</span>(glm::radians(yaw));<span class="comment">//译注：direction代表摄像机的“前”轴，但此前轴是和本文第一幅图片的第二个摄像机的direction是相反的</span></span><br><span class="line">direction.y = <span class="built_in">sin</span>(glm::radians(pitch));</span><br><span class="line">direction.z = <span class="built_in">cos</span>(glm::radians(pitch)) * <span class="built_in">sin</span>(glm::radians(yaw));</span><br></pre></td></tr></table></figure>
+<p><strong>11. 摄像机视野放大缩小</strong></p>
+<p>视野(Field of View 或 fov)定义了我们可以看到场景中多大的范围。当视野变小时可视区域就会减小，产生放大了的感觉。</p>
+<p>通过修改透视投影矩阵的缩放级别 aspect，可以实现该功能：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">projection = glm::perspective(aspect, (GLfloat)WIDTH/(GLfloat)HEIGHT, <span class="number">0.1f</span>, <span class="number">100.0f</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="4-光照篇"><a href="#4-光照篇" class="headerlink" title="4. 光照篇"></a>4. 光照篇</h2><p><strong>1. 颜色</strong></p>
+<p>定义物体的颜色为这个物体从一个光源反射各个颜色分量的多少。</p>
+<p>颜色向量(Color Vector)：一个通过红绿蓝(RGB)分量的组合描绘大部分真实颜色的向量，一个对象的颜色实际上是该对象不能吸收的反射颜色分量。</p>
+<p><strong>2. 冯氏光照模型</strong></p>
+<p>冯氏光照模型(Phong Lighting Model)：一个通过计算环境，漫反射，和镜面反射分量的值来估计真实光照的模型。</p>
+<p>冯氏光照模型的主要结构由 3 个元素组成：环境(Ambient)、漫反射(Diffuse)和镜面(Specular)光照：</p>
+<p>1.环境光照</p>
+<p>作用：无论如何永远都给物体一些颜色，模拟黑暗情况下的默认颜色。</p>
+<p>光能够反射(Reflect)到其他物体的表面，一个物体的光照可能受到来自一个非直射的光源影响。考虑到这种情况的算法叫做全局照明(Global Illumination)算法，但是这种算法既开销高昂又极其复杂。</p>
+<p>环境光照即是全局照明的简化版。</p>
+<p>添加环境光照：我们用光的颜色乘以一个(数值)很小常量环境因子，再乘以物体的颜色，然后使用它作为片段的颜色。</p>
+<p>2.漫反射光照</p>
+<p>作用：模拟一个发光物对物体的方向性影响。最能呈现物体本身的颜色。</p>
+<p>法线向量(Normal Vector)是垂直于片段表面的一种向量，利用它 + 定向的光线向量的点乘，可以求出俩者的夹角。角度越小，说明越趋近于直射，则越亮。角度越大，光对片段的影响越小。</p>
+<p>俩者夹角越小，点乘结果越倾向于 1。夹角为 90 度，则点乘结果为 0。</p>
+<p>定向的光线向量：即光的位置和片段的位置的连线的向量。</p>
+<p>3.镜面光照</p>
+<p>作用：当观察者视线靠近光源在表面的反射线时会显示的镜面高光。镜面光照的颜色，相比于物体的颜色更倾向于光的颜色。</p>
+<p>镜面光照(Specular Lighting)同样依据光的方向向量和物体的法向量，但是这次它也会依据观察方向，例如玩家是从什么方向看着这个片段的。</p>
+<p>计算光的反射向量和视线方向的角度，如果之间的角度越小，那么镜面光的作用就会越大。作用效果是，当我们去看光被物体所反射的那个方向的时候，我们会看到一个高光。</p>
+<p>观察向量的计算：使用观察者世界空间位置(Viewer’s World Space Position)和片段的位置来计算。</p>
+<blockquote>
+<p>关于三种光照结合不同投光物的光照计算方式，详见 OpenGL 函数简要。</p>
+</blockquote>
+<p><strong>3. 法线向量</strong></p>
+<p>定义：一个垂直于平面的单位向量。</p>
+<p>计算方式：由于顶点自身并没有表面(它只是空间中一个独立的点)，我们利用顶点周围的顶点计算出这个顶点的表面。我们能够使用叉乘这个技巧为立方体所有的顶点计算出法线。实际开发中，法线向量由 3DMax、Maya 等工具导出。</p>
+<p><strong>4. 正规矩阵</strong></p>
+<p>一个 3x3 矩阵, 或者说是没有平移的模型(或者模型观察)矩阵。它也被以某种方式修改(逆转置)从而当应用非统一缩放时保持法向量朝向正确的方向，否则法向量会在使用非统一缩放时失真。</p>
+<p>可以使用 inverse 和 transpose 函数自己生成正规矩阵，求安全的法向量公式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Normal = mat3(transpose(inverse(model))) * normal;</span><br></pre></td></tr></table></figure>
+<p>最好用 CPU 计算出正规矩阵，然后通过 uniform 把值传递给着色器。这是因为逆矩阵是相当消耗资源的操作。</p>
+<p><strong>5. 冯氏着色法</strong></p>
+<p>冯氏光照模型应用在片段着色器。</p>
+<p><strong>6. 高氏着色法</strong></p>
+<p>冯氏光照模型应用在顶点着色器上。在使用很少树木的顶点时会产生明显的瑕疵，会得到效率提升但是损失了视觉质量。</p>
+<p><strong>7. GLSL 结构体</strong></p>
+<p>一个类似于 C 的结构体，用作着色器变量的容器，大部分时间用来管理输入/输出/uniform。</p>
+<p><strong>8. 材质</strong></p>
+<p>一个物体反射的环境，漫反射，镜面反射光照，这些东西设定了物体的颜色。或者说材质中的漫反射贴图、镜面光照贴图等纹理结合光照决定了物体的颜色。</p>
+<p><strong>9. 漫反射贴图</strong></p>
+<p>Diffuse Map：一个设定了每个片段中漫反射颜色的纹理图片。</p>
+<p><strong>10. 镜面贴图</strong></p>
+<p>Specular Map：一个设定了每一个片段的镜面强度/颜色的纹理贴图，仅在物体的特定区域允许镜面高光。</p>
+<p><strong>11. 投光物</strong></p>
+<p>一个光源把光投射到物体上，叫做投光。投光物即各种类型的光源。</p>
+<p><strong>12. 定向光</strong></p>
+<p>Directional Light，平行光，只有一个方向的光源，它被建模为不管距离有多长所有光束都是平行而且其方向向量在整个场景中保持不变。</p>
+<blockquote>
+<p>光源有位置和方向参数，教程里使用 vec3 传递。<br><br>当使用 vec4 传递方向时，可以根据 w 分量区分是定向光还是位置光：<br>当 w = 0，说明平移旋转无用，是定向光；w = 1，说明可以平移旋转缩放，即按照位置光计算。</p>
+</blockquote>
+<p><strong>13. 点光源</strong></p>
+<p>Point Light：一个场景中光线逐渐淡出的光源。点光源有衰减效应，同时需要知道光源位置。</p>
+<p><strong>14. 衰减</strong></p>
+<p>Attenuation：光减少强度的过程，通常使用在点光源和聚光下。</p>
+<p>衰减计算公式：</p>
+<p>$$F_a = 1.0 \div (K_c + K_l \times d + K_q \times d^2)$$</p>
+<p>d：片段到光源的距离。<br><br>常数项：K_constant，一次项 K_linear 和二次项 K_quadratic。</p>
+<p>模拟现实的衰减情况，距离与常数项的关系如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">距离</th>
+<th style="text-align:left">常数项</th>
+<th style="text-align:left">一次项</th>
+<th style="text-align:left">二次项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">7</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.7</td>
+<td style="text-align:left">1.8</td>
+</tr>
+<tr>
+<td style="text-align:left">13</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.35</td>
+<td style="text-align:left">0.44</td>
+</tr>
+<tr>
+<td style="text-align:left">20</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.22</td>
+<td style="text-align:left">0.20</td>
+</tr>
+<tr>
+<td style="text-align:left">32</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.14</td>
+<td style="text-align:left">0.07</td>
+</tr>
+<tr>
+<td style="text-align:left">50</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.09</td>
+<td style="text-align:left">0.032</td>
+</tr>
+<tr>
+<td style="text-align:left">65</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.07</td>
+<td style="text-align:left">0.017</td>
+</tr>
+<tr>
+<td style="text-align:left">100</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.045</td>
+<td style="text-align:left">0.0075</td>
+</tr>
+<tr>
+<td style="text-align:left">160</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.027</td>
+<td style="text-align:left">0.0028</td>
+</tr>
+<tr>
+<td style="text-align:left">200</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.022</td>
+<td style="text-align:left">0.0019</td>
+</tr>
+<tr>
+<td style="text-align:left">325</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.014</td>
+<td style="text-align:left">0.0007</td>
+</tr>
+<tr>
+<td style="text-align:left">600</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.007</td>
+<td style="text-align:left">0.0002</td>
+</tr>
+<tr>
+<td style="text-align:left">3250</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">0.0014</td>
+<td style="text-align:left">0.000007</td>
+</tr>
+</tbody>
+</table>
+<p><strong>15. 聚光</strong></p>
+<p>手电筒(Flashlight)是一个普通的聚光，即一个被定义为在某一个方向上锥形的光源。</p>
+<p>同样，为了实现平滑过度，聚光包括内锥和外锥。从内锥到外锥存在衰减。衰减公式如下：</p>
+<p>$$I=(θ−γ)\divϵ$$</p>
+<p><a href="https://learnopengl-cn.readthedocs.io/zh/latest/02%20Lighting/05%20Light%20casters/" target="_blank" rel="noopener">推导公式</a> 并非重点，关于聚光的计算函数详见 OpenGL 函数简要。</p>
+<p><strong>16. GLSL uniform 数组</strong></p>
+<p>一个数组的 uniform 值，就像 C 语言数组一样工作，只是不能被动态调用。</p>
+<p>它的定义如下例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PointLight</span> &#123;</span></span><br><span class="line">    vec3 position;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> constant;</span><br><span class="line">    <span class="keyword">float</span> linear;</span><br><span class="line">    <span class="keyword">float</span> quadratic;  </span><br><span class="line"></span><br><span class="line">    vec3 ambient;</span><br><span class="line">    vec3 diffuse;</span><br><span class="line">    vec3 specular;</span><br><span class="line">&#125;;  </span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NR_POINT_LIGHTS 4  </span></span><br><span class="line">uniform PointLight pointLights[NR_POINT_LIGHTS];</span><br></pre></td></tr></table></figure>
+<p>它的链接如下例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glUniform1f(glGetUniformLocation(lightingShader.Program, <span class="string">"pointLights[0].constant"</span>), <span class="number">1.0f</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="5-模型加载篇"><a href="#5-模型加载篇" class="headerlink" title="5. 模型加载篇"></a>5. 模型加载篇</h2><p><strong>1. Assimp &amp; 网格</strong></p>
+<p>模型加载库，Assimp 可以导入几十种不同格式的模型文件（同样也可以导出部分模型格式）。只要 Assimp 加载完了模型文件，我们就可以从 Assimp 上获取所有需要的模型数据。Assimp 把不同的模型文件都转换为一个统一的数据结构，所有无论我们导入何种格式的模型文件，都可以用同一个方式去访问我们需要的模型数据。</p>
+<p>模型数据包括：</p>
+<ol>
+<li>Scene：包含根节点、所有的材质和网格；</li>
+<li>根节点：包含子节点和网格索引；</li>
+<li>子节点：包含子节点和网格索引；</li>
+<li>网格(Mesh)：一般来说，一个模型会由几个子模型/形状组合拼接而成，而模型中的那些子模型/形状就是我们所说的一个网格。网格是 OpenGL 中绘制物体的最小单位，一个模型通常由多个网格构成。网格包含了渲染自身所需的所有数据，如顶点位置、法线向量、纹理坐标、面片及物体的材质索引。</li>
+<li>面片(Face)：表示渲染中的一个最基本的形状单位，即图元。一个面片记录了一个图元的顶点索引，通过这个索引，可以在 mMeshes[] 中寻找到对应的顶点位置数据。</li>
+</ol>
+<p>如果我们绘制一个模型，不会去渲染整个模型，而是去渲染这个模型所包含的所有独立的 Mesh。</p>
+<p>关于 Assimp 库的构建详见 OpenGL 相关配置（MACOS）</p>
+<h2 id="6-高级-OpenGL-篇"><a href="#6-高级-OpenGL-篇" class="headerlink" title="6. 高级 OpenGL 篇"></a>6. 高级 OpenGL 篇</h2><p>从此篇开始，会以章节的形式记录每节的知识内容和细节，而不仅仅是概念。前面更多的是基础知识，讲求记忆、理解。后面更多的是结合基础知识的新技能，要求会用会写。</p>
+<h3 id="1-深度测试"><a href="#1-深度测试" class="headerlink" title="1. 深度测试"></a>1. 深度测试</h3><p>作用：防止被遮挡的面仍然参与渲染导致的面错位问题。</p>
+<p>什么是深度测试：使用深度缓冲(Depth Buffer)，可以防止被其他面遮挡的面渲染到前面。当深度测试启用的时候， OpenGL 测试深度缓冲区内的深度值，如果此测试通过，深度缓冲内的值将被设为新的深度值。如果深度测试失败，则丢弃该片段。</p>
+<p>gl_FragCoord：片段着色器内置的、由顶点数据转为屏幕空间坐标后的变量（即 2D 坐标，和 glViewport 视口有关）。gl_FragCoord 的 x 和 y 表示该片段的屏幕空间坐标 ((0，0) 在左下角)。gl_FragCoord 的 z 坐标包含了片段的实际深度值，此 z 坐标值是与深度缓冲区的内容进行比较的值。</p>
+<p>常用函数（详见 OpenGL 函数简要）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">glEnable(GL_DEPTH_TEST); <span class="comment">// 启用深度测试</span></span><br><span class="line">glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); <span class="comment">// 清除深度缓冲区</span></span><br><span class="line">glDepthMask(GL_FALSE); <span class="comment">// 禁用深度缓冲区写入</span></span><br><span class="line">glDepthFunc(GL_LESS); <span class="comment">// 设置比较运算符 默认片段深度值小于缓冲区的深度时通过测试</span></span><br></pre></td></tr></table></figure>
+<p>深度测试比较运算符：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">运算符</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">GL_ALWAYS</td>
+<td style="text-align:left">永远通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_NEVER</td>
+<td style="text-align:left">永远不通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_LESS</td>
+<td style="text-align:left">片段深度值小于缓冲区的深度时通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_EQUAL</td>
+<td style="text-align:left">片段深度值等于缓冲区的深度时通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_LEQUAL</td>
+<td style="text-align:left">片段深度值小于等于缓冲区的深度时通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_GREATER</td>
+<td style="text-align:left">片段深度值大于缓冲区的深度时通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_NOTEQUAL</td>
+<td style="text-align:left">片段深度值不等于缓冲区的深度时通过测试</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_GEQUAL</td>
+<td style="text-align:left">片段深度值大于等于缓冲区的深度时通过测试</td>
+</tr>
+</tbody>
+</table>
+<p>深度值的变化：深度缓冲区的值不是线性的，具体的公式不需要记，需要反推为线性的值（方便将深度值视觉化）可以使用下面的函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">LinearizeDepth</span><span class="params">(<span class="keyword">float</span> depth)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">float</span> near = <span class="number">0.1</span>;</span><br><span class="line">    <span class="keyword">float</span> far = <span class="number">100.0</span>;</span><br><span class="line">    <span class="keyword">float</span> z = depth * <span class="number">2.0</span> - <span class="number">1.0</span>; <span class="comment">// Back to NDC</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="number">2.0</span> * near) / (far + near - z * (far - near));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>深度冲突：两个平面或三角形紧密且相互平行，深度缓冲区不具有足够的精度以至于无法得到哪一个靠前，结果是这两个形状不断切换顺序（闪烁），这被称为深度冲突(Z-fighting)。</p>
+<p>防止深度冲突的技巧：</p>
+<ol>
+<li>平行情况下，把容器向 +y 方向上略微移动。缺点是需要人工的干预每个物体，并进行彻底地测试，以确保这个场景的物体之间没有深度冲突。</li>
+<li>尽可能把近平面设置得远一些。越靠近近平面的位置精度越高，所以移动近平面远离观察者，可以在椎体内提高精度。缺点是把近平面移动的太远会导致近处的物体被裁剪掉，且可能导致穿墙问题。所以需要不断调整测试。</li>
+<li>放弃性能来得到更高的深度值精度。大多数的深度缓冲区都是 24 位。但现在显卡支持 32 位深度值。</li>
+</ol>
+<h3 id="2-模版测试"><a href="#2-模版测试" class="headerlink" title="2. 模版测试"></a>2. 模版测试</h3><p>作用：可以用于生成选择边框、后视镜等效果。</p>
+<p>概述：模版测试的执行在片段着色器处理之后，深度测试之前。目的同样是根据条件丢弃一些片段。模板测试基于另一个缓冲，这个缓冲叫做模板缓冲(Stencil Buffer)。</p>
+<p>常用函数（详见 OpenGL 函数简要）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">glEnable(GL_STENCIL_TEST); <span class="comment">// 开启模版测试</span></span><br><span class="line">glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); <span class="comment">// 记得添加清空模版缓冲</span></span><br><span class="line">glStencilMask(<span class="number">0xFF</span>); <span class="comment">// 开启模版缓冲写入</span></span><br><span class="line">glStencilMask(<span class="number">0x00</span>); <span class="comment">// 禁用模版缓冲写入</span></span><br><span class="line">glStencilFunc(GL_EQUAL, <span class="number">1</span>, <span class="number">0xFF</span>); <span class="comment">// 决定模板测试何时通过或失败</span></span><br><span class="line">glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); <span class="comment">// 描述如何更新模版缓冲</span></span><br></pre></td></tr></table></figure>
+<p>利用模版测试实现边框效果的工作流：</p>
+<ol>
+<li>开启模版缓冲写入；</li>
+<li>渲染物体，更新模版缓冲；</li>
+<li>关闭模板缓冲写入；</li>
+<li>渲染（其他）物体，这次基于模板缓冲内容丢弃特定片段。</li>
+</ol>
+<p>理解工作流对于理解模版测试如何运行非常重要。</p>
+<h3 id="3-混合"><a href="#3-混合" class="headerlink" title="3. 混合"></a>3. 混合</h3><p>作用：实现半透明效果</p>
+<p>常用函数（详见 OpenGL 函数简要）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glEnable(GL_BLEND); <span class="comment">// 启用混合</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">glBlendFunc</span><span class="params">(GLenum sfactor, GLenum dfactor)</span></span>; <span class="comment">// 设置混合的源因子和目标因子</span></span><br></pre></td></tr></table></figure>
+<p>混合原理：</p>
+<p>$$C_r = C_s ∗ F_s + C_d ∗ F_d$$</p>
+<p>$C_s$：源颜色向量。纹理本身的颜色向量。<br><br>$F_s$：源因子。类似权重。<br><br>$C_d$：目标颜色向量。储存在颜色缓冲中当前位置的颜色向量，用于参与混合。<br><br>$F_d$：目标因子。</p>
+<p>混合步骤：</p>
+<ol>
+<li>开启混合，设置混合因子；</li>
+<li>纹理图片本身要有 alpha 属性；</li>
+<li>对于半透明物体，要由远及近的绘制。</li>
+</ol>
+<p>如上，会自行产生半透明效果。</p>
+<p>混合因子参数：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">GL_ZERO</td>
+<td style="text-align:left">0</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_SRC_COLOR</td>
+<td style="text-align:left">源颜色向量 $C_s$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_SRC_COLOR</td>
+<td style="text-align:left">1 − $C_s$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_DST_COLOR</td>
+<td style="text-align:left">目标颜色向量 $C_d$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_DST_COLOR</td>
+<td style="text-align:left">1 − $C_d$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_SRC_ALPHA</td>
+<td style="text-align:left">$C_s$ 的 alpha 值</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_SRC_ALPHA</td>
+<td style="text-align:left">1 − $C_s$ 的 alpha 值</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_DST_ALPHA</td>
+<td style="text-align:left">$C_d$ 的 alpha 值</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_DST_ALPHA</td>
+<td style="text-align:left">1 − $C_d$ 的 alpha 值</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_CONSTANT_COLOR</td>
+<td style="text-align:left">常颜色向量 $C_c$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_CONSTANT_COLOR</td>
+<td style="text-align:left">1 − $C_c$</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_CONSTANT_ALPHA</td>
+<td style="text-align:left">$C_c$ 的 alpha 值</td>
+</tr>
+<tr>
+<td style="text-align:left">GL_ONE_MINUS_CONSTANT_ALPHA</td>
+<td style="text-align:left">1 − $C_c$ 的 alpha 值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-面剔除"><a href="#4-面剔除" class="headerlink" title="4. 面剔除"></a>4. 面剔除</h3><p>作用：避免绘制无法观察到的面。</p>
+<p>概述：默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。观察者面对的所有的三角形的顶点的连接顺序都是正确的（逆时针），但是渲染的立方体另一面的三角形的顶点的连接顺序被反转（顺时针）。即使我们以逆时针顺序定义后面的三角形，它现在还是变为顺时针。面剔除就是要剔除这些不可见的三角形。</p>
+<blockquote>
+<p>因此把所有三角的顶点都定义为逆时针是一个很好的习惯。</p>
+</blockquote>
+<p>常用函数（详见 OpenGL 函数简要）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">glEnable(GL_CULL_FACE); <span class="comment">// 开启面剔除</span></span><br><span class="line">glCullFace(GL_FRONT); <span class="comment">// 设置剔除面，这里设置为剔除正面，默认为 GL_BACK</span></span><br><span class="line">glFrontFace(GL_CCW); <span class="comment">// 设置逆时针代表正面，默认逆时针，GL_CW 代表顺时针</span></span><br></pre></td></tr></table></figure>
+<p>下面是符合要求的面剔除立方体的顶点数据，可以看出只有背面是顺时针定义的，其余均为逆时针：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">float cubeVertices[] = &#123;</span><br><span class="line">    // Back face 顺</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left</span><br><span class="line">     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right</span><br><span class="line">     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom-right         </span><br><span class="line">     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left</span><br><span class="line">    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left</span><br><span class="line">    // Front face 逆</span><br><span class="line">    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left</span><br><span class="line">     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-right</span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right</span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right</span><br><span class="line">    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // top-left</span><br><span class="line">    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left</span><br><span class="line">    // Left face 逆</span><br><span class="line">    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right</span><br><span class="line">    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-left</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left</span><br><span class="line">    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right</span><br><span class="line">    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right</span><br><span class="line">    // Right face 逆</span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left</span><br><span class="line">     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right</span><br><span class="line">     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right         </span><br><span class="line">     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right</span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left</span><br><span class="line">     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left     </span><br><span class="line">    // Bottom face 逆</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right</span><br><span class="line">     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // top-left</span><br><span class="line">     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left</span><br><span class="line">     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left</span><br><span class="line">    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right</span><br><span class="line">    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right</span><br><span class="line">    // Top face 逆</span><br><span class="line">    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left</span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right</span><br><span class="line">     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right     </span><br><span class="line">     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right</span><br><span class="line">    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left</span><br><span class="line">    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // bottom-left        </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="5-帧缓冲"><a href="#5-帧缓冲" class="headerlink" title="5. 帧缓冲"></a>5. 帧缓冲</h3><p>定义：颜色缓冲 + 深度缓冲 + 模版缓冲，共称为帧缓冲。GLFW 默认为窗口创建和配置好了帧缓冲，通过创建我们自己的帧缓冲，可以实现镜面等效果。</p>
+<p>使用帧缓冲创建镜子效果的工作流：</p>
+<ol>
+<li>构建完整帧缓冲；</li>
+<li>游戏循环中，启用自定义帧缓冲，获取场景 texture； <code>glBindFramebuffer(GL_FRAMEBUFFER, fbo);</code></li>
+<li>启用窗口默认帧缓冲，将 texture 绘制到窗口对应物体上。<code>glBindFramebuffer(GL_FRAMEBUFFER, 0);</code></li>
+</ol>
+<p>如何构建完整帧缓冲：</p>
+<ol>
+<li>我们必须往里面加入至少一个附件（Attachment：颜色、深度、模板缓冲）。</li>
+<li>其中至少有一个是颜色附件。</li>
+<li>所有的附件都应该是已经完全做好的（已经存储在内存之中）。</li>
+<li>每个缓冲都应该有同样数目的样本。</li>
+</ol>
+<p>离屏渲染：</p>
+<p>后续所有渲染操作将渲染到当前绑定的帧缓冲的附加缓冲中，由于我们的帧缓冲不是默认的帧缓冲，渲染命令对窗口的视频输出不会产生任何影响。出于这个原因，它被称为离屏渲染（off-screen rendering），就是渲染到一个另外的缓冲中。</p>
+<p>俩种附件类型：</p>
+<p>纹理附件和渲染缓冲对象附件。<br><br>纹理附件的好处是：所有渲染操作的结果都会被储存为一个纹理图像，可以简单的在着色器中使用。<br><br>渲染缓冲对象附件的好处是：以 OpenGL 原生渲染格式储存它的数据，效率高，切换缓冲这种操作非常高速。<code>glfwSwapBuffers</code> 也以渲染缓冲对象实现。由于渲染缓冲对象通常是只写的，它们经常作为深度和模板附件来使用。<br><br>附件的使用规则是：不需要从特定的缓冲中进行采样，选择渲染缓冲对象附件。需要从特定缓冲采样数据，使用纹理附件。从执行效率角度考虑，它不会对效率有太大影响。</p>
+<p>示例代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">GLuint fbo;</span><br><span class="line">glGenFramebuffers(<span class="number">1</span>, &amp;fbo);</span><br><span class="line"><span class="comment">// 接下来所有的读、写帧缓冲的操作都会影响到当前绑定的帧缓冲</span></span><br><span class="line"><span class="comment">// GL_READ_FRAMEBUFFER GL_DRAW_FRAMEBUFFER 绑定只读、只写</span></span><br><span class="line">glBindFramebuffer(GL_FRAMEBUFFER, fbo);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建纹理附件 基本同创建纹理</span></span><br><span class="line">GLuint texture;</span><br><span class="line">glGenTextures(<span class="number">1</span>, &amp;texture);</span><br><span class="line">glBindTexture(GL_TEXTURE_2D, texture);</span><br><span class="line">glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, <span class="number">0</span>, GL_RGB, GL_UNSIGNED_BYTE, <span class="literal">NULL</span>); <span class="comment">// 本应传图片 这里传NULL 表示只分配内存 不去填充</span></span><br><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>); <span class="comment">// 记得解绑</span></span><br><span class="line"><span class="comment">// 附加到帧缓冲</span></span><br><span class="line"><span class="comment">// 参数2 附件类型 颜色附件 0表示数量 对于深度附件：GL_DEPTH_ATTACHMENT 对于模版附件：GL_STENCIL_ATTACHMENT 另外还有混合附件</span></span><br><span class="line"><span class="comment">// 参数3 希望附加的纹理类型 对于深度附件：GL_DEPTH_COMPONENT 对于模版附件：GL_STENCIL_INDEX</span></span><br><span class="line"><span class="comment">// 参数5 Mipmap level。我们设置为0</span></span><br><span class="line">glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建渲染缓冲对象附件</span></span><br><span class="line">GLuint rbo;</span><br><span class="line">glGenRenderbuffers(<span class="number">1</span>, &amp;rbo);</span><br><span class="line">glBindRenderbuffer(GL_RENDERBUFFER, rbo);</span><br><span class="line"><span class="comment">// 创建一个深度和模板渲染缓冲对象</span></span><br><span class="line">glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);</span><br><span class="line">glBindRenderbuffer(GL_RENDERBUFFER, <span class="number">0</span>); <span class="comment">// 记得解绑</span></span><br><span class="line"><span class="comment">// 附加到帧缓冲</span></span><br><span class="line">glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 检查帧缓冲是否完备可使用</span></span><br><span class="line"><span class="keyword">if</span> (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"ERROR::FRAMEBUFFER:: Framebuffer is not complete!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line">glBindFramebuffer(GL_FRAMEBUFFER, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (!glfwWindowShouldClose(window)) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 使用自定义帧缓冲获取场景 Texture</span></span><br><span class="line">    glBindFramebuffer(GL_FRAMEBUFFER, fbo);</span><br><span class="line">    draw(xxx);</span><br><span class="line">				</span><br><span class="line">    <span class="comment">// 使用默认帧缓冲把自定义帧缓冲的内容输出到屏幕</span></span><br><span class="line">    glBindFramebuffer(GL_FRAMEBUFFER, <span class="number">0</span>);</span><br><span class="line">    draw(xxx);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>后期处理：</p>
+<p>利用帧缓冲纹理附件的 texture，可以简单的实现特殊效果。详见 OpenGL 函数简要。</p>
+<h3 id="6-立方体贴图"><a href="#6-立方体贴图" class="headerlink" title="6. 立方体贴图"></a>6. 立方体贴图</h3><p>作用：生成天空盒，以及环境反射效果。</p>
+<p>未完待续…</p>
+<p>[^footnote1]: <a href="https://www.jianshu.com/p/e74eb43960a1" target="_blank" rel="noopener">markdown 数学公式语法说明参考链接</a><br>[^footnote2]: 向量的表示应当是 v 上加横线或箭头，计算机中为加粗。</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        </p><p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+
